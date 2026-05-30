@@ -376,8 +376,10 @@ body {
 }
 .md-body .md-img {
   max-width: 640px;
+  max-height: 380px;
   width: 100%;
   height: auto;
+  object-fit: contain;
   border-radius: 12px;
   border: 1px solid var(--border);
   margin: 1.5rem auto;
