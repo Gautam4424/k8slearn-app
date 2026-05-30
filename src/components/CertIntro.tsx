@@ -1,85 +1,7 @@
 'use client'
 
 import React from 'react'
-
-interface CertDetails {
-  title: string
-  subtitle: string
-  duration: string
-  passingScore: string
-  format: string
-  price: string
-  attempts: string
-  curriculum: { domain: string; weight: number }[]
-}
-
-const CERT_OFFICIAL_DATA: Record<string, CertDetails> = {
-  cka: {
-    title: 'Certified Kubernetes Administrator',
-    subtitle: 'The gold standard for cluster administrators. Focuses on production-grade cluster architecture, installation, configuration, networking, storage, security, and day-two troubleshooting.',
-    duration: '2 Hours',
-    passingScore: '66%',
-    format: 'Hands-on Performance-based (Interactive CLI)',
-    price: '$395 USD',
-    attempts: '2 attempts included',
-    curriculum: [
-      { domain: 'Cluster Architecture, Installation & Configuration', weight: 25 },
-      { domain: 'Workloads & Scheduling', weight: 15 },
-      { domain: 'Services & Networking', weight: 20 },
-      { domain: 'Storage', weight: 10 },
-      { domain: 'Troubleshooting', weight: 30 },
-    ],
-  },
-  ckad: {
-    title: 'Certified Kubernetes Application Developer',
-    subtitle: 'Designed for engineers who build, deploy, configure, secure, and troubleshoot cloud-native applications. Emphasizes design patterns, multi-container pods, volumes, service configuration, and networking.',
-    duration: '2 Hours',
-    passingScore: '66%',
-    format: 'Hands-on Performance-based (Interactive CLI)',
-    price: '$395 USD',
-    attempts: '2 attempts included',
-    curriculum: [
-      { domain: 'Application Design and Build', weight: 20 },
-      { domain: 'Application Deployment', weight: 20 },
-      { domain: 'Application Environment, Security and Configuration', weight: 25 },
-      { domain: 'Application Observability and Maintenance', weight: 15 },
-      { domain: 'Services and Networking', weight: 20 },
-    ],
-  },
-  cks: {
-    title: 'Certified Kubernetes Security Specialist',
-    subtitle: 'Advanced security certification focused on securing supply chains, cluster setup, system hardening, minimizing microservice vulnerabilities, runtime detection, auditing, and compliance. CKA is a prerequisite.',
-    duration: '2 Hours',
-    passingScore: '66%',
-    format: 'Hands-on Performance-based (Interactive CLI)',
-    price: '$395 USD',
-    attempts: '2 attempts included',
-    curriculum: [
-      { domain: 'Cluster Setup', weight: 10 },
-      { domain: 'Cluster Hardening', weight: 15 },
-      { domain: 'System Hardening', weight: 15 },
-      { domain: 'Minimize Microservice Vulnerabilities', weight: 20 },
-      { domain: 'Supply Chain Security', weight: 20 },
-      { domain: 'Monitoring, Logging and Runtime Security', weight: 20 },
-    ],
-  },
-  kcna: {
-    title: 'Kubernetes & Cloud Native Associate',
-    subtitle: 'The foundational entry point to the cloud-native ecosystem. Perfect for demonstrating understanding of basic Kubernetes core architecture, container orchestration, cloud-native delivery, observability, and CNCF landscape.',
-    duration: '90 Minutes',
-    passingScore: '75%',
-    format: 'Multiple Choice (Online Proctored)',
-    price: '$250 USD',
-    attempts: '2 attempts included',
-    curriculum: [
-      { domain: 'Kubernetes Fundamentals', weight: 46 },
-      { domain: 'Container Orchestration', weight: 22 },
-      { domain: 'Cloud Native Architecture', weight: 16 },
-      { domain: 'Cloud Native Observability', weight: 8 },
-      { domain: 'Cloud Native Application Delivery', weight: 8 },
-    ],
-  },
-}
+import { ExamDetails } from '@/types/content'
 
 const CERT_ACCENT: Record<string, string> = {
   cka:  'oklch(0.66 0.13 250)',
@@ -90,12 +12,19 @@ const CERT_ACCENT: Record<string, string> = {
 
 interface CertIntroProps {
   certId: string
+  details: ExamDetails | null
   onStartTrack: () => void
 }
 
-export default function CertIntro({ certId, onStartTrack }: CertIntroProps) {
-  const details = CERT_OFFICIAL_DATA[certId.toLowerCase()]
-  if (!details) return null
+export default function CertIntro({ certId, details, onStartTrack }: CertIntroProps) {
+  if (!details) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-soft)' }}>
+        <div className="spinner" style={{ margin: '0 auto 1rem' }} />
+        <p>Loading exam syllabus from content repository…</p>
+      </div>
+    )
+  }
 
   const accentColor = CERT_ACCENT[certId.toLowerCase()] ?? CERT_ACCENT.kcna
 

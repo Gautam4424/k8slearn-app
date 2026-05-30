@@ -117,5 +117,17 @@ export async function GET() {
     tree[t.cert][t.roadmap].push(t)
   }
 
-  return NextResponse.json({ topics, tree })
+  // Load exam metadata dynamically from exam.json in each cert folder
+  const exams: Record<string, any> = {}
+  const certDirs = ['cka', 'ckad', 'cks', 'kcna']
+  for (const c of certDirs) {
+    const examFile = path.join(contentDir, c, 'exam.json')
+    if (fs.existsSync(examFile)) {
+      try {
+        exams[c] = JSON.parse(fs.readFileSync(examFile, 'utf8'))
+      } catch (_) {}
+    }
+  }
+
+  return NextResponse.json({ topics, tree, exams })
 }

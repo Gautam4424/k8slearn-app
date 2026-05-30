@@ -27,7 +27,19 @@ export interface TopicEntry {
   mdContent: string
 }
 
+export interface ExamDetails {
+  title: string
+  subtitle: string
+  duration: string
+  passingScore: string
+  format: string
+  price: string
+  attempts: string
+  curriculum: { domain: string; weight: number }[]
+}
+
 export interface ContentData {
   topics: TopicEntry[]
   tree: Record<string, Record<string, TopicEntry[]>>
+  exams: Record<string, ExamDetails>
 }

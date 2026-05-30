@@ -268,7 +268,7 @@ export default function Home() {
 
             {/* ── Certification Intro Page ──────────────────── */}
             {!loading && !error && !activeTopic && !activeRoadmap && activeCert && (
-              <CertIntro certId={activeCert} onStartTrack={handleStartTrack} />
+              <CertIntro certId={activeCert} details={data?.exams?.[activeCert.toLowerCase()] || null} onStartTrack={handleStartTrack} />
             )}
 
             {/* ── Roadmap overview grid ─────────────────────── */}
