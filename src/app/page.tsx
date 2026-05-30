@@ -408,7 +408,13 @@ function Sidebar({ tree, activeTopic, onSelect }: {
                   <span className="roadmap-icon">📂</span> {roadmap}
                   <span className="roadmap-count">{topics.length}</span>
                 </div>
-                {[...topics].sort((a, b) => (a.meta.order || 99) - (b.meta.order || 99)).map(t => (
+                {[...topics].sort((a, b) => {
+                  const diffRank: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 }
+                  const da = diffRank[a.meta.difficulty] ?? 99
+                  const db = diffRank[b.meta.difficulty] ?? 99
+                  if (da !== db) return da - db
+                  return (a.meta.order || 99) - (b.meta.order || 99)
+                }).map(t => (
                   <button
                     key={t.slug}
                     className={`topic-link ${activeTopic?.slug === t.slug ? 'active' : ''}`}
