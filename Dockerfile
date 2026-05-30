@@ -13,6 +13,12 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Install git for background content sync and configure system-wide SSH -> HTTPS translation and safe directories
+RUN apk add --no-cache git && \
+    git config --system url."https://github.com/".insteadOf "git@github.com:" && \
+    git config --system --add safe.directory /app/content && \
+    git config --system --add safe.directory /app
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 

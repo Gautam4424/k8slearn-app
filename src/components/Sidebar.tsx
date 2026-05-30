@@ -130,10 +130,15 @@ export default function Sidebar({
       {/* ── Active cert badge header ──────────────────────── */}
       <div className="sidebar-header-scoped">
         {activeCert && CERT_META[activeCert] && (
-          <div className="active-cert-header">
+          <button 
+            className="active-cert-header" 
+            onClick={() => onCertSelect(activeCert)}
+            title={`View ${CERT_META[activeCert].label} syllabus`}
+            style={{ background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font)', padding: '0.25rem 0.5rem', borderRadius: '6px' }}
+          >
             <span className={`cert-badge ${CERT_META[activeCert].color}`}>{activeCert.toUpperCase()}</span>
             <span className="active-cert-name">{CERT_META[activeCert].label}</span>
-          </div>
+          </button>
         )}
       </div>
 

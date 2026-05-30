@@ -2234,7 +2234,16 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding-top: 0.25rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), transform 0.15s var(--ease);
+  width: fit-content;
+}
+
+.active-cert-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
 }
 
 .active-cert-name {
