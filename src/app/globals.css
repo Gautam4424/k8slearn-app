@@ -168,6 +168,9 @@ body {
 
 .roadmap-group { margin-left: 0.25rem; margin-bottom: 0.25rem; }
 .roadmap-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   padding: 0.35rem 0.5rem;
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -177,6 +180,13 @@ body {
   transition: background 0.15s;
 }
 .roadmap-label:hover { background: rgba(255,255,255,0.03); }
+.roadmap-count {
+  margin-left: auto;
+  background: rgba(255,255,255,0.06);
+  padding: 0.1rem 0.4rem;
+  border-radius: 99px;
+  font-size: 0.65rem;
+}
 
 .topic-link {
   display: flex;
@@ -217,7 +227,7 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 2rem 2.5rem;
-  max-width: 860px;
+  max-width: 900px;
   width: 100%;
   margin: 0 auto;
 }
@@ -301,176 +311,440 @@ body {
   font-size: 0.7rem; color: var(--text-muted);
 }
 
-/* ── Markdown content ─────────────────────────────────────── */
-.md-body h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; margin-top: 0; letter-spacing: -0.03em; }
-.md-body h2 { font-size: 1.15rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.75rem; color: var(--text); padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-.md-body h3 { font-size: 1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--text-soft); }
-.md-body p  { color: #cbd5e1; margin-bottom: 1rem; font-size: 0.925rem; line-height: 1.8; }
-.md-body ul, .md-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-.md-body li { color: #cbd5e1; font-size: 0.925rem; margin-bottom: 0.35rem; }
-.md-body code {
-  font-family: var(--font-mono);
-  font-size: 0.825rem;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 0.15rem 0.4rem;
-  border-radius: 5px;
-  color: #93c5fd;
+/* ═══════════════════════════════════════════════════════════
+   MARKDOWN CONTENT BODY
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Headings ────────────────────────────────────────────── */
+.md-body .md-h1 {
+  font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em;
+  color: var(--text); margin-bottom: 1rem; margin-top: 0;
 }
-/* ── Premium Code Block Styling ───────────────────────────── */
-.md-body .code-block {
-  background: #090d16;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.md-body .code-block:hover {
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 4px 30px rgba(59, 130, 246, 0.05);
-}
-.md-body .code-header {
+.md-body .md-h2 {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.625rem 1rem;
-  background: rgba(2, 8, 23, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  gap: 0.75rem;
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--text);
+  margin-top: 2rem; margin-bottom: 1rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--border);
+}
+.md-body .h2-bar {
+  display: inline-block;
+  width: 4px; height: 1.2em;
+  background: linear-gradient(180deg, var(--primary), var(--success));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.md-body .md-h3 {
+  font-size: 1rem; font-weight: 600;
+  color: #93c5fd;
+  margin-top: 1.5rem; margin-bottom: 0.625rem;
+}
+.md-body .md-h4 {
+  font-size: 0.9rem; font-weight: 600;
   color: var(--text-soft);
-  user-select: none;
+  margin-top: 1rem; margin-bottom: 0.5rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
-.md-body .code-lang {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.md-body .md-hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
 }
-.md-body .code-dots {
-  display: flex;
-  gap: 0.375rem;
-}
-.md-body .code-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-}
-.md-body .code-dots span:nth-child(1) { background: #ef4444; }
-.md-body .code-dots span:nth-child(2) { background: #f59e0b; }
-.md-body .code-dots span:nth-child(3) { background: #10b981; }
-
-.md-body .code-pre {
-  margin: 0 !important;
-  padding: 1.25rem 1.5rem !important;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.85rem !important;
-  line-height: 1.6 !important;
+.md-body .md-p {
   color: #cbd5e1;
-  overflow-x: auto;
+  margin-bottom: 1rem;
+  font-size: 0.935rem;
+  line-height: 1.85;
+}
+.md-body .md-ul, .md-body .md-ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.md-body .md-ul li, .md-body .md-ol li {
+  color: #cbd5e1;
+  font-size: 0.925rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.7;
+}
+.md-body .md-ul li::marker { color: var(--primary); }
+.md-body .md-ol li::marker { color: var(--primary); font-weight: 600; }
+
+/* ── Inline code ─────────────────────────────────────────── */
+.inline-code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: rgba(99, 179, 237, 0.12);
+  border: 1px solid rgba(99, 179, 237, 0.2);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  color: #93c5fd;
+  white-space: nowrap;
 }
 
-/* Specific language colors */
-.md-body .bash-code { color: #f8fafc; }
-.md-body .yaml-code { color: #f1f5f9; }
-.md-body .json-code { color: #e2e8f0; }
+/* ═══════════════════════════════════════════════════════════
+   FLOW DIAGRAM — Visual step cards
+   ═══════════════════════════════════════════════════════════ */
+.md-body .flow-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 1.75rem 1.5rem;
+  background: linear-gradient(135deg, #020c1a 0%, #040e20 100%);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 16px;
+  margin-bottom: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.md-body .flow-diagram::before {
+  content: 'FLOW DIAGRAM';
+  position: absolute;
+  top: 0.625rem; right: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(59,130,246,0.5);
+  text-transform: uppercase;
+}
+.md-body .flow-step-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+}
+.md-body .flow-step-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+.md-body .flow-step-card:hover {
+  border-color: rgba(59,130,246,0.5);
+  box-shadow: 0 0 20px rgba(59,130,246,0.08);
+}
+.md-body .flow-step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #0ea5e9);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.md-body .flow-step-text {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+  flex: 1;
+}
+.md-body .flow-step-key {
+  color: #60a5fa;
+  font-weight: 600;
+}
+.md-body .flow-arrow {
+  font-size: 1.1rem;
+  color: rgba(59,130,246,0.5);
+  padding: 0.2rem 0;
+  animation: pulse-arrow 2s ease-in-out infinite;
+}
+@keyframes pulse-arrow {
+  0%, 100% { color: rgba(59,130,246,0.4); transform: translateY(0); }
+  50% { color: rgba(59,130,246,0.8); transform: translateY(2px); }
+}
 
-/* ── Diagram Styling ─────────────────────────────────────── */
+/* ── Fallback diagram (pre-format) ───────────────────────── */
 .md-body .diagram-block {
   background: #020712;
-  background-image: 
-    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
   border: 1px dashed rgba(59, 130, 246, 0.3);
   border-radius: 12px;
   margin-bottom: 1.5rem;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   position: relative;
-  transition: all 0.25s ease;
-}
-.md-body .diagram-block:hover {
-  border-color: var(--primary);
-  box-shadow: 0 4px 30px rgba(59, 130, 246, 0.15);
-  background-color: #030a1a;
 }
 .md-body .diagram-label {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.75rem;
+  padding: 0.4rem 1rem;
+  background: rgba(59,130,246,0.08);
+  border-bottom: 1px solid rgba(59,130,246,0.15);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--primary);
-  background: var(--primary-dim);
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  user-select: none;
+  display: flex; align-items: center; gap: 0.5rem;
 }
+.md-body .diagram-icon { font-style: normal; }
 .md-body .diagram-pre {
   margin: 0 !important;
-  padding: 1.5rem 1.5rem !important;
-  background: transparent !important;
-  border: none !important;
+  padding: 1.25rem 1.5rem !important;
   font-family: var(--font-mono) !important;
   font-size: 0.85rem !important;
-  line-height: 1.55 !important;
-  color: #38bdf8; /* light blue console text */
+  line-height: 1.6 !important;
+  color: #38bdf8;
   overflow-x: auto;
   white-space: pre;
 }
 
-/* ── Callout / Blockquote styling ────────────────────────── */
-.md-body .callout {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 10px;
+/* ═══════════════════════════════════════════════════════════
+   BASH TERMINAL — command blocks
+   ═══════════════════════════════════════════════════════════ */
+.md-body .bash-block {
+  background: #0a0e14;
+  border: 1px solid #1e2a3a;
+  border-radius: 12px;
+  overflow: hidden;
   margin-bottom: 1.5rem;
-  border-left: 4px solid var(--primary);
-  background: var(--primary-dim);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+  transition: box-shadow 0.2s;
 }
-.md-body .callout-icon {
-  font-size: 1.25rem;
+.md-body .bash-block:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.12);
+}
+.md-body .bash-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: #0d1117;
+  border-bottom: 1px solid #1e2a3a;
+  user-select: none;
+}
+.md-body .bash-dots {
+  display: flex; gap: 0.375rem;
+}
+.md-body .bash-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.md-body .bash-dots span:nth-child(1) { background: #ff5f57; }
+.md-body .bash-dots span:nth-child(2) { background: #ffbd2e; }
+.md-body .bash-dots span:nth-child(3) { background: #28c840; }
+.md-body .bash-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #4a5568;
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+.md-body .bash-pre {
+  margin: 0 !important;
+  padding: 1.25rem 1.5rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  color: #e2e8f0;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.md-body .bash-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.1rem 0;
+  color: #e2e8f0;
+  white-space: pre;
+}
+.md-body .bash-prompt {
+  color: #10b981;
+  font-weight: 700;
   flex-shrink: 0;
-  line-height: 1.4;
+  user-select: none;
 }
-.md-body .callout-body {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #cbd5e1;
+.md-body .bash-comment {
+  display: block;
+  color: #4a5568;
+  font-style: italic;
+  padding: 0.1rem 0;
+  white-space: pre;
 }
-.md-body .callout-body strong {
-  color: var(--text);
+.md-body .bash-empty {
+  display: block;
+  height: 0.5rem;
 }
-.md-body .callout-warning {
-  border-left-color: var(--warning);
-  background: var(--warning-dim);
+.md-body .bash-cmd {
+  color: #60a5fa;
+  font-weight: 600;
 }
-.md-body .callout-info {
-  border-left-color: #a855f7;
-  background: rgba(168, 85, 247, 0.08);
-}
-.md-body .callout-note {
-  border-left-color: var(--success);
-  background: var(--success-dim);
+.md-body .bash-flag {
+  color: #f9a8d4;
 }
 
-/* ── Table Styling ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   YAML / CONFIG — structured config blocks
+   ═══════════════════════════════════════════════════════════ */
+.md-body .yaml-block {
+  background: #080f1a;
+  border: 1px solid #1a2744;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: box-shadow 0.2s;
+}
+.md-body .yaml-block:hover {
+  box-shadow: 0 4px 30px rgba(168,85,247,0.07);
+  border-color: rgba(168,85,247,0.2);
+}
+.md-body .yaml-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: #0a1220;
+  border-bottom: 1px solid #1a2744;
+  user-select: none;
+}
+.md-body .yaml-lang-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #c084fc;
+  margin-left: auto;
+  background: rgba(168,85,247,0.1);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+.md-body .yaml-pre {
+  margin: 0 !important;
+  padding: 1.25rem 1.5rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  color: #e2e8f0;
+  overflow-x: auto;
+}
+.md-body .yaml-key    { color: #93c5fd; }
+.md-body .yaml-colon  { color: #64748b; }
+.md-body .yaml-string { color: #86efac; }
+.md-body .yaml-bool   { color: #fb923c; font-weight: 600; }
+.md-body .yaml-number { color: #f472b6; }
+.md-body .yaml-value  { color: #e2e8f0; }
+.md-body .yaml-comment { color: #374151; font-style: italic; }
+
+/* ═══════════════════════════════════════════════════════════
+   GENERIC CODE BLOCK
+   ═══════════════════════════════════════════════════════════ */
+.md-body .code-block {
+  background: #090d16;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.md-body .code-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: rgba(2,8,23,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  user-select: none;
+}
+.md-body .code-lang {
+  font-family: var(--font-mono);
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+  background: rgba(255,255,255,0.06);
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+  margin-left: auto;
+}
+.md-body .code-pre {
+  margin: 0 !important;
+  padding: 1.25rem 1.5rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  color: #cbd5e1;
+  overflow-x: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CALLOUT BOXES
+   ═══════════════════════════════════════════════════════════ */
+.md-body .callout {
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+.md-body .callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.md-body .callout-icon { font-size: 1rem; }
+.md-body .callout-label { font-size: 0.75rem; }
+.md-body .callout-body {
+  padding: 0.875rem 1.125rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+.md-body .callout-body strong { color: var(--text); }
+/* Tip */
+.md-body .callout-tip {
+  border-color: rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.05);
+}
+.md-body .callout-tip .callout-header {
+  background: rgba(16,185,129,0.1);
+  color: var(--success);
+  border-bottom: 1px solid rgba(16,185,129,0.15);
+}
+/* Warning */
+.md-body .callout-warning {
+  border-color: rgba(245,158,11,0.25);
+  background: rgba(245,158,11,0.04);
+}
+.md-body .callout-warning .callout-header {
+  background: rgba(245,158,11,0.1);
+  color: var(--warning);
+  border-bottom: 1px solid rgba(245,158,11,0.15);
+}
+/* Info */
+.md-body .callout-info {
+  border-color: rgba(99,179,237,0.25);
+  background: rgba(99,179,237,0.04);
+}
+.md-body .callout-info .callout-header {
+  background: rgba(99,179,237,0.1);
+  color: #63b3ed;
+  border-bottom: 1px solid rgba(99,179,237,0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════════ */
 .md-body .table-wrap {
   width: 100%;
   overflow-x: auto;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 .md-body .md-table {
   width: 100%;
@@ -479,59 +753,29 @@ body {
   text-align: left;
 }
 .md-body .md-table th {
-  background: rgba(15, 23, 42, 0.9);
-  padding: 0.75rem 1rem;
+  background: rgba(15,23,42,0.95);
+  padding: 0.75rem 1.25rem;
   font-weight: 600;
   color: var(--text);
-  border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
+  border-bottom: 2px solid rgba(59,130,246,0.3);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 .md-body .md-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   color: #cbd5e1;
-  background: rgba(2, 8, 23, 0.3);
+  background: rgba(2,8,23,0.3);
+  vertical-align: top;
+  line-height: 1.6;
 }
-.md-body .md-table tr:last-child td {
-  border-bottom: none;
-}
-.md-body .md-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
-}
+.md-body .md-table tr:last-child td { border-bottom: none; }
+.md-body .md-table tr:hover td { background: rgba(59,130,246,0.04); }
 
-/* Generic pre fallback */
-.md-body pre {
-  background: #020f1f;
-  border: 1px solid rgba(59,130,246,0.2);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  overflow-x: auto;
-  margin-bottom: 1.25rem;
-  position: relative;
-}
-.md-body pre code {
-  background: transparent; border: none; padding: 0;
-  font-size: 0.85rem; color: #e2e8f0;
-}
-.md-body table {
-  width: 100%; border-collapse: collapse;
-  margin-bottom: 1.25rem; font-size: 0.875rem;
-}
-.md-body th {
-  background: rgba(255,255,255,0.05);
-  padding: 0.6rem 1rem; text-align: left;
-  font-weight: 600; color: var(--text-soft);
-  border: 1px solid var(--border);
-}
-.md-body td {
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--border); color: #cbd5e1;
-}
-.md-body tr:hover td { background: rgba(255,255,255,0.02); }
-
-/* ── Quiz section ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   QUIZ SECTION
+   ═══════════════════════════════════════════════════════════ */
 .quiz-section {
   margin-top: 2.5rem;
   padding-top: 1.75rem;
