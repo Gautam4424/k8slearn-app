@@ -36,6 +36,7 @@ function esc(s: string): string {
 /* ── Inline format helper ───────────────────────────────── */
 function inlineFormat(text: string): string {
   return text
+    .replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="md-img" />')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')

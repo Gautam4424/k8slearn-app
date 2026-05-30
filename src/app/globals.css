@@ -374,6 +374,15 @@ body {
   border-top: 1px solid var(--border);
   margin: 2rem 0;
 }
+.md-body .md-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow);
+  display: block;
+}
 .md-body .md-p {
   color: #cbd5e1;
   margin-bottom: 1rem;
