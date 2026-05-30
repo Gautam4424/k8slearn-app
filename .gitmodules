@@ -1,0 +1,3 @@
+[submodule "content"]
+	path = content
+	url = git@github.com:Gautam4424/k8slearn-content.git
