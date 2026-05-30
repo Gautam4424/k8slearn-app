@@ -286,7 +286,7 @@ function renderMarkdown(raw: string): string {
       !lines[i].trimStart().startsWith('```') &&
       !lines[i].match(/^[-*] /) &&
       !lines[i].match(/^\d+\. /) &&
-      !lines[i].includes('|') &&
+      !(lines[i].includes('|') && lines[i + 1] && lines[i + 1].includes('---')) &&
       !lines[i].match(/^---+$/)
     ) {
       paraLines.push(lines[i])
@@ -294,6 +294,8 @@ function renderMarkdown(raw: string): string {
     }
     if (paraLines.length > 0) {
       out.push(`<p class="md-p">${inlineFormat(esc(paraLines.join(' ')))}</p>`)
+    } else {
+      i++
     }
   }
 
