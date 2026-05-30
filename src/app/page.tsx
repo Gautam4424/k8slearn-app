@@ -158,6 +158,451 @@ function renderCodeBlock(lines: string[], lang: string): string {
   </div>`
 }
 
+/* ── Cluster Architecture Diagram Renderer ───────────────── */
+function renderClusterArchitectureDiagram(): string {
+  return `
+  <div class="k8s-cluster-diag">
+    <div class="diag-container">
+      <div class="diag-title">KUBERNETES CLUSTER</div>
+      
+      <!-- Control Plane Card -->
+      <div class="diag-card control-plane-card">
+        <div class="card-title">
+          <span class="pulse-dot"></span>
+          CONTROL PLANE
+        </div>
+        <div class="control-plane-grid">
+          <div class="comp-box api-server">
+            <div class="comp-title">API Server</div>
+            <div class="comp-subtitle">kube-apiserver</div>
+            <div class="comp-tooltip">The captain. Front-end of control plane. Communicates with everything.</div>
+          </div>
+          <div class="comp-box etcd">
+            <div class="comp-title">etcd</div>
+            <div class="comp-subtitle">Cluster Store</div>
+            <div class="comp-tooltip">Single source of truth. Distributed key-value store for cluster state.</div>
+          </div>
+          <div class="comp-box scheduler">
+            <div class="comp-title">Scheduler</div>
+            <div class="comp-subtitle">kube-scheduler</div>
+            <div class="comp-tooltip">Watches for unassigned Pods and schedules them to healthy nodes.</div>
+          </div>
+          <div class="comp-box controller-mgr">
+            <div class="comp-title">Controller Manager</div>
+            <div class="comp-subtitle">kube-controller-manager</div>
+            <div class="comp-tooltip">Runs controller loops (Node, Replication, Endpoints, SA controllers).</div>
+          </div>
+          <div class="comp-box cloud-mgr optional">
+            <div class="comp-title">Cloud Controller Manager</div>
+            <div class="comp-subtitle">optional</div>
+            <div class="comp-tooltip">Integrates cluster with cloud provider APIs.</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Flow lines -->
+      <div class="diag-arrows">
+        <div class="arrow-line">
+          <div class="arrow-head">▼</div>
+        </div>
+        <div class="arrow-line">
+          <div class="arrow-head">▼</div>
+        </div>
+        <div class="arrow-line">
+          <div class="arrow-head">▼</div>
+        </div>
+      </div>
+      
+      <!-- Worker Nodes Container -->
+      <div class="worker-nodes-container">
+        <!-- Worker Node 1 -->
+        <div class="diag-card worker-node-card">
+          <div class="card-title text-worker">WORKER NODE 1</div>
+          <div class="worker-components">
+            <div class="worker-comp-box kubelet">
+              <span class="w-icon">⚓</span>
+              <div class="w-text">
+                <div class="w-name">kubelet</div>
+                <div class="w-desc">Node Agent</div>
+              </div>
+            </div>
+            <div class="worker-comp-box kube-proxy">
+              <span class="w-icon">🌐</span>
+              <div class="w-text">
+                <div class="w-name">kube-proxy</div>
+                <div class="w-desc">Network Rules</div>
+              </div>
+            </div>
+            <div class="worker-comp-box runtime">
+              <span class="w-icon">🐳</span>
+              <div class="w-text">
+                <div class="w-name">Runtime</div>
+                <div class="w-desc">containerd</div>
+              </div>
+            </div>
+            <div class="pods-box">
+              <div class="pods-title">PODS</div>
+              <div class="pods-grid">
+                <div class="pod-item">Pod 1</div>
+                <div class="pod-item">Pod 2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Worker Node 2 -->
+        <div class="diag-card worker-node-card">
+          <div class="card-title text-worker">WORKER NODE 2</div>
+          <div class="worker-components">
+            <div class="worker-comp-box kubelet">
+              <span class="w-icon">⚓</span>
+              <div class="w-text">
+                <div class="w-name">kubelet</div>
+                <div class="w-desc">Node Agent</div>
+              </div>
+            </div>
+            <div class="worker-comp-box kube-proxy">
+              <span class="w-icon">🌐</span>
+              <div class="w-text">
+                <div class="w-name">kube-proxy</div>
+                <div class="w-desc">Network Rules</div>
+              </div>
+            </div>
+            <div class="worker-comp-box runtime">
+              <span class="w-icon">🐳</span>
+              <div class="w-text">
+                <div class="w-name">Runtime</div>
+                <div class="w-desc">containerd</div>
+              </div>
+            </div>
+            <div class="pods-box">
+              <div class="pods-title">PODS</div>
+              <div class="pods-grid">
+                <div class="pod-item">Pod 3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Worker Node N -->
+        <div class="diag-card worker-node-card">
+          <div class="card-title text-worker">WORKER NODE N</div>
+          <div class="worker-components">
+            <div class="worker-comp-box kubelet">
+              <span class="w-icon">⚓</span>
+              <div class="w-text">
+                <div class="w-name">kubelet</div>
+                <div class="w-desc">Node Agent</div>
+              </div>
+            </div>
+            <div class="worker-comp-box kube-proxy">
+              <span class="w-icon">🌐</span>
+              <div class="w-text">
+                <div class="w-name">kube-proxy</div>
+                <div class="w-desc">Network Rules</div>
+              </div>
+            </div>
+            <div class="worker-comp-box runtime">
+              <span class="w-icon">🐳</span>
+              <div class="w-text">
+                <div class="w-name">Runtime</div>
+                <div class="w-desc">containerd</div>
+              </div>
+            </div>
+            <div class="pods-box">
+              <div class="pods-title">PODS</div>
+              <div class="pods-grid">
+                <div class="pod-item">Pod N</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  `
+}
+
+interface Box {
+  id: string
+  r: number
+  c: number
+  r2: number
+  c2: number
+  text: string
+  title: string
+  subtitle: string
+  children: Box[]
+  parent?: Box
+}
+
+function parseAsciiBoxes(lines: string[]): Box[] {
+  const numRows = lines.length
+  if (numRows === 0) return []
+  const numCols = Math.max(...lines.map(l => l.length))
+  
+  // Pad all lines to the same length
+  const grid = lines.map(line => line.padEnd(numCols, ' '))
+  
+  const boxBorderChars = new Set([
+    '┌', '─', '┐', '│', '└', '┘',
+    '╔', '═', '╗', '║', '╚', '╝',
+    '┬', '┴', '├', '┤', '┼', '╪', '╫', '╬',
+    '╒', '╓', '╞', '╢', '╟', '╧', '╨'
+  ])
+
+  const corners = new Set(['┌', '╔', '╒', '╓'])
+  const rightCorners = new Set(['┐', '╗', '╕', '╖'])
+  const bottomCorners = new Set(['└', '╚', '╘', '╙'])
+  const bottomRightCorners = new Set(['┘', '╝', '╛', '╜'])
+
+  const boxes: Box[] = []
+  let boxIdCounter = 0
+
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      const char = grid[r][c]
+      if (corners.has(char)) {
+        // Look for corresponding top-right corner on the same row
+        for (let c2 = c + 2; c2 < numCols; c2++) {
+          if (rightCorners.has(grid[r][c2])) {
+            // Found top-right, now look for bottom-left on the same column
+            for (let r2 = r + 2; r2 < numRows; r2++) {
+              if (bottomCorners.has(grid[r2][c])) {
+                // Check bottom-right
+                if (bottomRightCorners.has(grid[r2][c2])) {
+                  let valid = true
+                  // Check borders
+                  for (let i = c + 1; i < c2; i++) {
+                    if (!boxBorderChars.has(grid[r][i])) valid = false
+                  }
+                  for (let i = c + 1; i < c2; i++) {
+                    if (!boxBorderChars.has(grid[r2][i])) valid = false
+                  }
+                  for (let i = r + 1; i < r2; i++) {
+                    if (!boxBorderChars.has(grid[i][c])) valid = false
+                  }
+                  for (let i = r + 1; i < r2; i++) {
+                    if (!boxBorderChars.has(grid[i][c2])) valid = false
+                  }
+
+                  if (valid) {
+                    boxes.push({
+                      id: `box-${boxIdCounter++}`,
+                      r, c, r2, c2,
+                      text: '',
+                      title: '',
+                      subtitle: '',
+                      children: []
+                    })
+                    break
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Extract text inside each box, skipping regions belonging to nested child boxes
+  for (const box of boxes) {
+    const textLines: string[] = []
+    
+    for (let row = box.r + 1; row < box.r2; row++) {
+      let rowText = ''
+      for (let col = box.c + 1; col < box.c2; col++) {
+        let isInsideChild = false
+        for (const B of boxes) {
+          if (B.id === box.id) continue
+          const bInsideBox = B.r >= box.r && B.c >= box.c && B.r2 <= box.r2 && B.c2 <= box.c2
+          if (bInsideBox) {
+            const cellInsideB = row >= B.r && row <= B.r2 && col >= B.c && col <= B.c2
+            if (cellInsideB) {
+              isInsideChild = true
+              break
+            }
+          }
+        }
+        
+        if (!isInsideChild) {
+          rowText += grid[row][col]
+        } else {
+          rowText += ' '
+        }
+      }
+      
+      let cleaned = ''
+      for (let idx = 0; idx < rowText.length; idx++) {
+        const ch = rowText[idx]
+        if (!boxBorderChars.has(ch)) {
+          cleaned += ch
+        } else {
+          cleaned += ' '
+        }
+      }
+      const trimmed = cleaned.trim()
+      if (trimmed.length > 0) {
+        textLines.push(trimmed)
+      }
+    }
+    
+    const text = textLines.join(' ')
+    box.text = text
+    
+    let title = text
+    let subtitle = ''
+    const parenMatch = text.match(/^([^(]+)\s*\(([^)]+)\)/)
+    if (parenMatch) {
+      title = parenMatch[1].trim()
+      subtitle = parenMatch[2].trim()
+    } else if (text.includes(':')) {
+      const idx = text.indexOf(':')
+      title = text.substring(0, idx).trim()
+      subtitle = text.substring(idx + 1).trim()
+    }
+    box.title = title
+    box.subtitle = subtitle
+  }
+
+  // Build the nesting tree
+  boxes.sort((a, b) => {
+    const areaA = (a.r2 - a.r) * (a.c2 - a.c)
+    const areaB = (b.r2 - b.r) * (b.c2 - b.c)
+    return areaB - areaA
+  })
+
+  const rootBoxes: Box[] = []
+
+  for (const box of boxes) {
+    let foundParent = false
+    for (let i = boxes.length - 1; i >= 0; i--) {
+      const p = boxes[i]
+      if (p.id === box.id) continue
+      const contains = p.r <= box.r && p.c <= box.c && p.r2 >= box.r2 && p.c2 >= box.c2
+      if (contains) {
+        p.children.push(box)
+        box.parent = p
+        foundParent = true
+        break
+      }
+    }
+    if (!foundParent) {
+      rootBoxes.push(box)
+    }
+  }
+
+  return rootBoxes
+}
+
+function groupIntoRows(children: Box[]): Box[][] {
+  const sorted = [...children].sort((a, b) => a.r - b.r)
+  const rows: Box[][] = []
+  
+  for (const box of sorted) {
+    let placed = false
+    for (const row of rows) {
+      const representative = row[0]
+      const overlap = Math.max(0, Math.min(box.r2, representative.r2) - Math.max(box.r, representative.r))
+      const minHeight = Math.min(box.r2 - box.r, representative.r2 - representative.r)
+      if (overlap >= minHeight * 0.4) {
+        row.push(box)
+        placed = true
+        break
+      }
+    }
+    if (!placed) {
+      rows.push([box])
+    }
+  }
+  
+  for (const row of rows) {
+    row.sort((a, b) => a.c - b.c)
+  }
+  
+  rows.sort((a, b) => a[0].r - b[0].r)
+  return rows
+}
+
+function renderBoxHtml(box: Box, depth: number = 0): string {
+  const hasChildren = box.children.length > 0
+  const cleanTitle = esc(box.title)
+  const cleanSubtitle = esc(box.subtitle)
+  
+  if (hasChildren) {
+    const rows = groupIntoRows(box.children)
+    const rowsHtml = rows.map(row => {
+      const colsHtml = row.map(child => renderBoxHtml(child, depth + 1)).join('\n')
+      return `<div class="diag-row">${colsHtml}</div>`
+    }).join('\n')
+    
+    const cardClass = depth === 0 ? 'diag-root-card' : depth === 1 ? 'diag-section-card' : 'diag-nested-card'
+    const sectionId = cleanTitle.toLowerCase().replace(/\s+/g, '-')
+    
+    return `
+      <div class="diag-card-universal ${cardClass} section-${sectionId}">
+        <div class="card-title-universal">
+          <span class="pulse-dot-universal"></span>
+          <span class="card-title-text">${cleanTitle}</span>
+          ${cleanSubtitle ? `<span class="card-title-sub">(${cleanSubtitle})</span>` : ''}
+        </div>
+        <div class="card-body-universal">
+          ${rowsHtml}
+        </div>
+      </div>
+    `
+  } else {
+    const cardId = cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const isOptional = cleanSubtitle.toLowerCase() === 'optional'
+    
+    const icons: Record<string, string> = {
+      'api server': '⚡',
+      'etcd': '💾',
+      'scheduler': '📅',
+      'controller manager': '⚙️',
+      'cloud controller manager': '☁️',
+      'kubelet': '⚓',
+      'kube-proxy': '🌐',
+      'kube-prxy': '🌐',
+      'runtime': '🐳',
+      'pods': '📦',
+      'pod': '📦',
+      'container': '🐳'
+    }
+    
+    const lookupTitle = cleanTitle.toLowerCase().trim()
+    const icon = icons[lookupTitle] || '⬡'
+    
+    const tooltips: Record<string, string> = {
+      'api server': 'kube-apiserver: The primary communication hub of the Control Plane. Exposes the Kubernetes API.',
+      'etcd': 'etcd: Consistent and highly-available key-value store used as Kubernetes\' backing store for all data.',
+      'scheduler': 'kube-scheduler: Watches for newly created Pods with no assigned node, and selects a node for them to run on.',
+      'controller manager': 'kube-controller-manager: Runs controller processes in the background (Node, Replication, Endpoints, etc.).',
+      'cloud controller manager': 'cloud-controller-manager: Embeds cloud-specific control logic, letting you link your cluster into cloud APIs.',
+      'kubelet': 'kubelet: An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod.',
+      'kube-proxy': 'kube-proxy: A network proxy that runs on each node in your cluster, maintaining network rules to allow communication.',
+      'kube-prxy': 'kube-proxy: A network proxy that runs on each node in your cluster, maintaining network rules to allow communication.',
+      'runtime': 'Container Runtime: The software responsible for running containers (e.g. containerd, CRI-O).',
+      'pods': 'Pods: The smallest deployable Kubernetes object. A Pod represents a set of running containers on your cluster.'
+    }
+    
+    const tooltipText = tooltips[lookupTitle] || `${cleanTitle}${cleanSubtitle ? ` (${cleanSubtitle})` : ''}: A core component of the Kubernetes system.`
+
+    return `
+      <div class="comp-box-universal comp-color-${cardId} ${isOptional ? 'optional-comp' : ''}">
+        <div class="comp-icon-universal">${icon}</div>
+        <div class="comp-details-universal">
+          <div class="comp-title-universal">${cleanTitle}</div>
+          ${cleanSubtitle && !isOptional ? `<div class="comp-subtitle-universal">${cleanSubtitle}</div>` : ''}
+          ${isOptional ? `<div class="comp-subtitle-universal tag-optional">optional</div>` : ''}
+        </div>
+        <div class="comp-tooltip-universal">${tooltipText}</div>
+      </div>
+    `
+  }
+}
+
 /* ── Main Markdown Renderer ─────────────────────────────── */
 function renderMarkdown(raw: string): string {
   const lines = raw.replace(/\r\n/g, '\n').split('\n')
@@ -189,8 +634,14 @@ function renderMarkdown(raw: string): string {
       })()
 
       if (lang === 'diagram' || lang === 'ascii') {
-        const content = codeLines.map(l => esc(l)).join('\n')
-        out.push(`<div class="diagram-block"><div class="diagram-label"><span class="diagram-icon">⬡</span> ARCHITECTURE DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`)
+        const rootBoxes = parseAsciiBoxes(codeLines)
+        if (rootBoxes.length > 0) {
+          const contentHtml = rootBoxes.map(b => renderBoxHtml(b, 0)).join('\n')
+          out.push(`<div class="universal-diagram-wrap">${contentHtml}</div>`)
+        } else {
+          const content = codeLines.map(l => esc(l)).join('\n')
+          out.push(`<div class="diagram-block"><div class="diagram-label"><span class="diagram-icon">⬡</span> ARCHITECTURE DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`)
+        }
       } else if (isDiagram) {
         out.push(parseFlowDiagram(codeLines))
       } else if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
