@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 
 /* ── Types ──────────────────────────────────────────────── */
 interface Question {
@@ -10,95 +10,193 @@ interface Question {
   answer: number
   explanation: string
 }
-
 interface TopicMeta {
-  title: string
-  cert: string
-  roadmap: string
-  subtopic: string
-  difficulty: string
-  content: string
-  order?: number
-  tags?: string[]
+  title: string; cert: string; roadmap: string; subtopic: string
+  difficulty: string; content: string; order?: number; tags?: string[]
   questions: Question[]
 }
-
 interface TopicEntry {
-  slug: string
-  cert: string
-  roadmap: string
-  subtopicSlug: string
-  meta: TopicMeta
-  mdContent: string
+  slug: string; cert: string; roadmap: string; subtopicSlug: string
+  meta: TopicMeta; mdContent: string
 }
-
 interface ContentData {
   topics: TopicEntry[]
   tree: Record<string, Record<string, TopicEntry[]>>
 }
 
-/* ── Simple MD renderer ─────────────────────────────────── */
-function renderMarkdown(md: string): string {
-  return md
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
-      `<pre><code class="lang-${lang}">${code.trimEnd()}</code></pre>`)
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^\| (.+) \|$/gm, (row) => {
-      const cells = row.split('|').slice(1, -1)
-      return '<tr>' + cells.map(c => {
-        const t = c.trim()
-        return t.match(/^[-:]+$/) ? '' : `<td>${t}</td>`
-      }).filter(Boolean).join('') + '</tr>'
-    })
-    .replace(/(<tr>.*<\/tr>\n?)+/g, m =>
-      `<table><tbody>${m.replace(/<tr><td>/g, '<tr><th>').replace(/<\/td><\/tr>/, '</th></tr>').slice(0, '<tr><th>'.length) === '<tr><th>' ? '<thead>' + m.split('\n')[0] + '</thead><tbody>' + m.split('\n').slice(1).join('\n') + '</tbody>' : m}</tbody></table>`)
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
-    .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
-    .replace(/\n{2,}/g, '\n\n')
-    .split('\n\n')
-    .map(block => {
-      if (/^<(h[1-6]|pre|ul|ol|table|li)/.test(block.trim())) return block
-      const t = block.trim()
-      return t ? `<p>${t.replace(/\n/g, '<br/>')}</p>` : ''
-    })
-    .join('\n')
+/* ── Escape HTML ────────────────────────────────────────── */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
-/* ── Quiz component ─────────────────────────────────────── */
-function Quiz({ questions }: { questions: Question[] }) {
-  const [answers, setAnswers] = useState<(number | null)[]>(
-    () => new Array(questions.length).fill(null)
-  )
-  const [revealed, setRevealed] = useState(false)
+/* ── Markdown Renderer ──────────────────────────────────── */
+function renderMarkdown(raw: string): string {
+  const lines = raw.replace(/\r\n/g, '\n').split('\n')
+  const out: string[] = []
+  let i = 0
+
+  function inlineFormat(text: string): string {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>')
+  }
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // ── Code / Diagram blocks ──────────────────────────────
+    if (line.trimStart().startsWith('```')) {
+      const lang = line.trim().replace(/^```/, '').trim().toLowerCase()
+      const isRaw = lang === '' || lang === 'text' || lang === 'plain'
+      const isDiagram = isRaw && (() => {
+        let j = i + 1
+        while (j < lines.length && !lines[j].trimStart().startsWith('```')) j++
+        const snippet = lines.slice(i + 1, j).join('\n')
+        return /[│├└┐┘┌─▼▲→←]/.test(snippet) || snippet.includes('──') || snippet.includes('   │')
+      })()
+
+      const codeLines: string[] = []
+      i++
+      while (i < lines.length && !lines[i].trimStart().startsWith('```')) {
+        codeLines.push(lines[i])
+        i++
+      }
+      i++ // skip closing ```
+
+      const content = codeLines.map(l => esc(l)).join('\n')
+
+      if (isDiagram) {
+        out.push(`<div class="diagram-block"><div class="diagram-label">FLOW DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`)
+      } else if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
+        out.push(`<div class="code-block"><div class="code-header"><span class="code-lang">$ bash</span><span class="code-dots"><span></span><span></span><span></span></span></div><pre class="code-pre bash-code">${content}</pre></div>`)
+      } else if (lang === 'yaml' || lang === 'yml') {
+        out.push(`<div class="code-block"><div class="code-header"><span class="code-lang">YAML</span><span class="code-dots"><span></span><span></span><span></span></span></div><pre class="code-pre yaml-code">${content}</pre></div>`)
+      } else if (lang === 'json') {
+        out.push(`<div class="code-block"><div class="code-header"><span class="code-lang">JSON</span><span class="code-dots"><span></span><span></span><span></span></span></div><pre class="code-pre json-code">${content}</pre></div>`)
+      } else if (lang === 'typescript' || lang === 'ts' || lang === 'tsx') {
+        out.push(`<div class="code-block"><div class="code-header"><span class="code-lang">TypeScript</span><span class="code-dots"><span></span><span></span><span></span></span></div><pre class="code-pre ts-code">${content}</pre></div>`)
+      } else {
+        const label = lang ? lang.toUpperCase() : 'CODE'
+        out.push(`<div class="code-block"><div class="code-header"><span class="code-lang">${label}</span><span class="code-dots"><span></span><span></span><span></span></span></div><pre class="code-pre">${content}</pre></div>`)
+      }
+      continue
+    }
+
+    // ── Blockquotes ─────────────────────────────────────────
+    if (line.trimStart().startsWith('>')) {
+      const bqLines: string[] = []
+      while (i < lines.length && lines[i].trimStart().startsWith('>')) {
+        bqLines.push(lines[i].replace(/^>\s?/, ''))
+        i++
+      }
+      const inner = bqLines.join(' ')
+      const icon = inner.includes('⚠️') ? 'warning' : inner.includes('📚') ? 'info' : 'note'
+      out.push(`<div class="callout callout-${icon}"><div class="callout-icon">${icon === 'warning' ? '⚠️' : icon === 'info' ? '📚' : '💡'}</div><div class="callout-body">${inlineFormat(inner.replace(/⚠️|📚/g, '').trim())}</div></div>`)
+      continue
+    }
+
+    // ── Tables ──────────────────────────────────────────────
+    if (line.includes('|') && lines[i + 1] && lines[i + 1].includes('---')) {
+      const tableLines: string[] = []
+      while (i < lines.length && lines[i].includes('|')) {
+        tableLines.push(lines[i])
+        i++
+      }
+      const [headerRow, , ...bodyRows] = tableLines
+      const headers = headerRow.split('|').filter(c => c.trim()).map(c => `<th>${inlineFormat(esc(c.trim()))}</th>`).join('')
+      const rows = bodyRows.map(r =>
+        `<tr>${r.split('|').filter(c => c.trim()).map(c => `<td>${inlineFormat(esc(c.trim()))}</td>`).join('')}</tr>`
+      ).join('')
+      out.push(`<div class="table-wrap"><table class="md-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`)
+      continue
+    }
+
+    // ── Headings ─────────────────────────────────────────────
+    const h1 = line.match(/^# (.+)$/)
+    const h2 = line.match(/^## (.+)$/)
+    const h3 = line.match(/^### (.+)$/)
+    const h4 = line.match(/^#### (.+)$/)
+    if (h1) { out.push(`<h1 class="md-h1">${inlineFormat(esc(h1[1]))}</h1>`); i++; continue }
+    if (h2) { out.push(`<h2 class="md-h2">${inlineFormat(esc(h2[1]))}</h2>`); i++; continue }
+    if (h3) { out.push(`<h3 class="md-h3">${inlineFormat(esc(h3[1]))}</h3>`); i++; continue }
+    if (h4) { out.push(`<h4 class="md-h4">${inlineFormat(esc(h4[1]))}</h4>`); i++; continue }
+
+    // ── Horizontal rule ──────────────────────────────────────
+    if (line.match(/^---+$/)) { out.push('<hr class="md-hr"/>'); i++; continue }
+
+    // ── Lists ─────────────────────────────────────────────────
+    if (line.match(/^(\s*)[-*] /)) {
+      const listItems: string[] = []
+      while (i < lines.length && lines[i].match(/^(\s*)[-*] /)) {
+        const indent = lines[i].match(/^(\s*)/)?.[1].length || 0
+        const text = lines[i].replace(/^\s*[-*] /, '')
+        listItems.push(`<li style="margin-left:${indent * 0.75}rem">${inlineFormat(esc(text))}</li>`)
+        i++
+      }
+      out.push(`<ul class="md-ul">${listItems.join('')}</ul>`)
+      continue
+    }
+
+    // ── Ordered lists ────────────────────────────────────────
+    if (line.match(/^\d+\. /)) {
+      const listItems: string[] = []
+      while (i < lines.length && lines[i].match(/^\d+\. /)) {
+        listItems.push(`<li>${inlineFormat(esc(lines[i].replace(/^\d+\. /, '')))}</li>`)
+        i++
+      }
+      out.push(`<ol class="md-ol">${listItems.join('')}</ol>`)
+      continue
+    }
+
+    // ── Empty line / paragraph break ─────────────────────────
+    if (line.trim() === '') { i++; continue }
+
+    // ── Paragraph ────────────────────────────────────────────
+    const paraLines: string[] = []
+    while (i < lines.length && lines[i].trim() !== '' &&
+      !lines[i].match(/^#{1,4} /) &&
+      !lines[i].trimStart().startsWith('>') &&
+      !lines[i].trimStart().startsWith('```') &&
+      !lines[i].match(/^[-*] /) &&
+      !lines[i].match(/^\d+\. /) &&
+      !lines[i].includes('|') &&
+      !lines[i].match(/^---+$/)
+    ) {
+      paraLines.push(lines[i])
+      i++
+    }
+    if (paraLines.length > 0) {
+      out.push(`<p class="md-p">${inlineFormat(esc(paraLines.join(' ')))}</p>`)
+    }
+  }
+
+  return out.join('\n')
+}
+
+/* ── Quiz Component ─────────────────────────────────────── */
+function Quiz({ questions, key: _key }: { questions: Question[]; key?: string }) {
+  const [answers, setAnswers] = useState<(number | null)[]>(() => new Array(questions.length).fill(null))
   const [currentQ, setCurrentQ] = useState(0)
 
-  const handleAnswer = (qIdx: number, optIdx: number) => {
-    if (answers[qIdx] !== null) return
-    const next = [...answers]
-    next[qIdx] = optIdx
-    setAnswers(next)
-    if (qIdx === currentQ && qIdx < questions.length - 1) {
-      setTimeout(() => setCurrentQ(q => q + 1), 800)
+  const handleAnswer = (qi: number, oi: number) => {
+    if (answers[qi] !== null) return
+    const next = [...answers]; next[qi] = oi; setAnswers(next)
+    if (qi === currentQ && qi < questions.length - 1) {
+      setTimeout(() => setCurrentQ(q => q + 1), 700)
     }
   }
 
   const score = answers.filter((a, i) => a === questions[i].answer).length
   const answered = answers.filter(a => a !== null).length
-  const allAnswered = answered === questions.length
+  const allDone = answered === questions.length
 
-  const reset = () => {
-    setAnswers(new Array(questions.length).fill(null))
-    setRevealed(false)
-    setCurrentQ(0)
-  }
+  const reset = () => { setAnswers(new Array(questions.length).fill(null)); setCurrentQ(0) }
 
   return (
     <div className="quiz-section">
@@ -106,83 +204,46 @@ function Quiz({ questions }: { questions: Question[] }) {
         <h2>Practice Quiz</h2>
         <span className="quiz-count">{questions.length} questions</span>
       </div>
-
       <div className="quiz-progress">
         <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${(answered / questions.length) * 100}%` }}
-          />
+          <div className="progress-fill" style={{ width: `${(answered / questions.length) * 100}%` }} />
         </div>
-        <span className="progress-text">{answered} / {questions.length}</span>
+        <span className="progress-text">{answered}/{questions.length}</span>
       </div>
-
-      {allAnswered && (
+      {allDone && (
         <div className="quiz-result" style={{ marginBottom: '1.5rem' }}>
           <div className="quiz-result-score">{score}/{questions.length}</div>
-          <p>
-            {score === questions.length
-              ? '🎉 Perfect score! You nailed it.'
-              : score >= questions.length / 2
-              ? '✅ Good job! Review the ones you missed.'
-              : '📖 Keep studying — you\'ll get there!'}
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <button className="btn btn-primary" onClick={reset}>Try Again</button>
-            {!revealed && (
-              <button className="btn btn-ghost" onClick={() => setRevealed(true)}>
-                Show All Answers
-              </button>
-            )}
-          </div>
+          <p>{score === questions.length ? '🎉 Perfect!' : score >= Math.ceil(questions.length * 0.7) ? '✅ Good job!' : '📖 Keep studying!'}</p>
+          <button className="btn btn-primary" onClick={reset} style={{ marginTop: '0.5rem' }}>Try Again</button>
         </div>
       )}
-
       {questions.map((q, qi) => {
         const selected = answers[qi]
         const isAnswered = selected !== null
-        const isVisible = qi <= currentQ || revealed || isAnswered
-
-        if (!isVisible) return null
-
+        if (qi > currentQ && !isAnswered) return null
         return (
           <div key={qi} className="question-card">
-            <div className="question-num">
-              Question {qi + 1}
-              <span className="question-type-badge">{q.type}</span>
-            </div>
+            <div className="question-num">Q{qi + 1} <span className="question-type-badge">{q.type}</span></div>
             <div className="question-text">{q.q}</div>
             <div className="options">
               {q.options.map((opt, oi) => {
                 const isCorrect = oi === q.answer
                 const isSelected = selected === oi
                 let cls = 'option-btn'
-                if (isAnswered || revealed) {
+                if (isAnswered) {
                   if (isSelected && isCorrect) cls += ' selected-correct'
                   else if (isSelected && !isCorrect) cls += ' selected-wrong'
-                  else if (isCorrect && (revealed || isAnswered)) cls += ' reveal-correct'
+                  else if (isCorrect) cls += ' reveal-correct'
                 }
                 return (
-                  <button
-                    key={oi}
-                    className={cls}
-                    disabled={isAnswered}
-                    onClick={() => handleAnswer(qi, oi)}
-                    id={`q${qi}-opt${oi}`}
-                  >
-                    <span className="option-letter">
-                      {String.fromCharCode(65 + oi)}
-                    </span>
+                  <button key={oi} className={cls} disabled={isAnswered} onClick={() => handleAnswer(qi, oi)} id={`q${qi}-opt${oi}`}>
+                    <span className="option-letter">{String.fromCharCode(65 + oi)}</span>
                     {opt}
                   </button>
                 )
               })}
             </div>
-            {(isAnswered || revealed) && (
-              <div className="explanation">
-                <strong>Explanation:</strong> {q.explanation}
-              </div>
-            )}
+            {isAnswered && <div className="explanation"><strong>Explanation:</strong> {q.explanation}</div>}
           </div>
         )
       })}
@@ -191,18 +252,19 @@ function Quiz({ questions }: { questions: Question[] }) {
 }
 
 /* ── Sidebar ────────────────────────────────────────────── */
-function Sidebar({
-  tree,
-  activeTopic,
-  onSelect,
-}: {
+function Sidebar({ tree, activeTopic, onSelect }: {
   tree: Record<string, Record<string, TopicEntry[]>>
   activeTopic: TopicEntry | null
   onSelect: (t: TopicEntry) => void
 }) {
+  const certMeta: Record<string, { label: string; color: string }> = {
+    cka:  { label: 'Kubernetes Administrator', color: 'cert-cka' },
+    ckad: { label: 'Application Developer', color: 'cert-ckad' },
+    cks:  { label: 'Security Specialist', color: 'cert-cks' },
+    kcna: { label: 'Cloud Native Associate', color: 'cert-kcna' },
+  }
   const certOrder = ['cka', 'ckad', 'cks', 'kcna']
-  const certs = [...new Set([...certOrder, ...Object.keys(tree)])]
-    .filter(c => tree[c])
+  const certs = [...new Set([...certOrder, ...Object.keys(tree)])].filter(c => tree[c])
 
   return (
     <nav className="sidebar">
@@ -211,24 +273,24 @@ function Sidebar({
         {certs.map(cert => (
           <div key={cert} className="cert-group">
             <div className="cert-label">
-              <span className={`cert-badge ${cert}`}>{cert.toUpperCase()}</span>
-              {cert === 'cka'  && 'Kubernetes Administrator'}
-              {cert === 'ckad' && 'Application Developer'}
-              {cert === 'cks'  && 'Security Specialist'}
-              {cert === 'kcna' && 'Cloud Native Associate'}
+              <span className={`cert-badge ${certMeta[cert]?.color || ''}`}>{cert.toUpperCase()}</span>
+              <span className="cert-name">{certMeta[cert]?.label || cert}</span>
             </div>
             {Object.entries(tree[cert] || {}).map(([roadmap, topics]) => (
               <div key={roadmap} className="roadmap-group">
-                <div className="roadmap-label">📂 {roadmap}</div>
-                {topics.map(t => (
+                <div className="roadmap-label">
+                  <span className="roadmap-icon">📂</span> {roadmap}
+                  <span className="roadmap-count">{topics.length}</span>
+                </div>
+                {[...topics].sort((a, b) => (a.meta.order || 99) - (b.meta.order || 99)).map(t => (
                   <button
                     key={t.slug}
                     className={`topic-link ${activeTopic?.slug === t.slug ? 'active' : ''}`}
                     onClick={() => onSelect(t)}
                     id={`sidebar-${t.slug.replace(/\//g, '-')}`}
                   >
-                    <span className={`diff-dot ${t.meta.difficulty}`} />
-                    {t.meta.title}
+                    <span className={`diff-dot ${t.meta.difficulty}`} title={t.meta.difficulty} />
+                    <span className="topic-link-text">{t.meta.title}</span>
                   </button>
                 ))}
               </div>
@@ -249,10 +311,7 @@ export default function Home() {
 
   useEffect(() => {
     fetch('/api/content')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
       .then(d => setData(d))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -260,87 +319,59 @@ export default function Home() {
 
   const handleSelect = useCallback((t: TopicEntry) => {
     setActiveTopic(t)
+    setTimeout(() => window.scrollTo({ top: 0 }), 0)
   }, [])
+
+  const renderedMd = useMemo(
+    () => activeTopic ? renderMarkdown(activeTopic.mdContent) : '',
+    [activeTopic]
+  )
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="header">
         <div className="header-logo">
           <span className="header-logo-badge">k8s</span>
           <span className="header-logo-text">learn</span>
         </div>
         <span className="header-tagline">
-          {loading ? 'Loading content…' : data
-            ? `${data.topics.length} topic${data.topics.length !== 1 ? 's' : ''} across ${Object.keys(data.tree).length} cert${Object.keys(data.tree).length !== 1 ? 's' : ''}`
-            : 'Kubernetes Certification Learning Platform'
-          }
+          {loading ? 'Loading…'
+            : data ? `${data.topics.length} topics · ${Object.keys(data.tree).length} certifications`
+            : 'Kubernetes Certification Learning'}
         </span>
       </header>
 
       <div className="main">
-        {/* Sidebar */}
-        {data && (
-          <Sidebar
-            tree={data.tree}
-            activeTopic={activeTopic}
-            onSelect={handleSelect}
-          />
-        )}
+        {data && <Sidebar tree={data.tree} activeTopic={activeTopic} onSelect={handleSelect} />}
 
-        {/* Content */}
         <main className="content-area">
           <div className="content-scroll">
             {loading && (
               <div className="loading">
                 <div className="spinner" />
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                  Reading content repository…
-                </p>
+                <p>Reading content repository…</p>
               </div>
             )}
-
             {error && (
               <div className="error-box" style={{ marginTop: '2rem' }}>
-                ⚠️ <strong>Could not load content:</strong> {error}
-                <br />
-                <small>Make sure the content submodule is present at <code>content/</code></small>
+                ⚠️ <strong>Content load failed:</strong> {error}
               </div>
             )}
-
             {!loading && !error && !activeTopic && (
               <div className="welcome">
                 <div className="welcome-icon">k8s</div>
                 <h1>k8slearn</h1>
-                <p>
-                  Interactive Kubernetes certification learning.
-                  Pick a topic from the sidebar to start studying.
-                </p>
-                <div className="welcome-hint">
-                  ← Select a topic from the left panel
-                </div>
-                {data && data.topics.length === 0 && (
-                  <div className="empty-state" style={{ marginTop: '1rem' }}>
-                    No topics found. Make sure the content submodule is populated.
-                  </div>
-                )}
+                <p>Interactive Kubernetes certification learning. Select a topic from the sidebar.</p>
+                <div className="welcome-hint">← Choose a topic from the left panel</div>
               </div>
             )}
-
             {activeTopic && (
               <>
-                {/* Topic header */}
                 <div className="topic-header">
                   <div className="topic-meta-row">
-                    <span className="tag tag-cert">
-                      {activeTopic.meta.cert.toUpperCase()}
-                    </span>
-                    <span className="tag tag-roadmap">
-                      {activeTopic.meta.roadmap}
-                    </span>
-                    <span className={`tag tag-${activeTopic.meta.difficulty}`}>
-                      {activeTopic.meta.difficulty}
-                    </span>
+                    <span className="tag tag-cert">{activeTopic.meta.cert.toUpperCase()}</span>
+                    <span className="tag tag-roadmap">{activeTopic.meta.roadmap}</span>
+                    <span className={`tag tag-${activeTopic.meta.difficulty}`}>{activeTopic.meta.difficulty}</span>
                   </div>
                   <h1 className="topic-title">{activeTopic.meta.title}</h1>
                   {activeTopic.meta.tags && activeTopic.meta.tags.length > 0 && (
@@ -351,18 +382,9 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-
-                {/* Markdown content */}
-                <div
-                  className="md-body"
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(activeTopic.mdContent)
-                  }}
-                />
-
-                {/* Quiz */}
+                <div className="md-body" dangerouslySetInnerHTML={{ __html: renderedMd }} />
                 {activeTopic.meta.questions.length > 0 && (
-                  <Quiz questions={activeTopic.meta.questions} />
+                  <Quiz key={activeTopic.slug} questions={activeTopic.meta.questions} />
                 )}
               </>
             )}
