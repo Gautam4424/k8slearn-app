@@ -188,7 +188,10 @@ function renderMarkdown(raw: string): string {
           /\|\s/.test(snippet)
       })()
 
-      if (isDiagram) {
+      if (lang === 'diagram' || lang === 'ascii') {
+        const content = codeLines.map(l => esc(l)).join('\n')
+        out.push(`<div class="diagram-block"><div class="diagram-label"><span class="diagram-icon">⬡</span> ARCHITECTURE DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`)
+      } else if (isDiagram) {
         out.push(parseFlowDiagram(codeLines))
       } else if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
         out.push(renderBashBlock(codeLines))
