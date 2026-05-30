@@ -7,6 +7,8 @@ import { renderMarkdown } from '@/utils/markdown'
 import Quiz from '@/components/Quiz'
 import RoadmapOverview from '@/components/RoadmapOverview'
 import Sidebar from '@/components/Sidebar'
+import LabCard from '@/components/LabCard'
+import CertIntro from '@/components/CertIntro'
 
 /* ── Cert accent colour map ───────────────────────────────── */
 const CERT_ACCENT: Record<string, string> = {
@@ -122,24 +124,20 @@ export default function Home() {
 
   const handleCertSelect = useCallback((cert: string) => {
     setActiveCert(cert)
-    if (cert === '') {
-      setActiveTopic(null)
-      setActiveRoadmap(null)
-    } else if (data?.tree[cert]) {
-      const roadmaps = Object.keys(data.tree[cert])
-      if (roadmaps.length > 0) {
-        setActiveRoadmap({ cert, roadmap: roadmaps[0], topics: data.tree[cert][roadmaps[0]] })
-        setActiveTopic(null)
-      } else {
-        setActiveTopic(null)
-        setActiveRoadmap(null)
-      }
-    } else {
-      setActiveTopic(null)
-      setActiveRoadmap(null)
-    }
+    setActiveTopic(null)
+    setActiveRoadmap(null)
     setTimeout(scrollTop, 0)
-  }, [data])
+  }, [])
+
+  const handleStartTrack = useCallback(() => {
+    if (activeCert && data?.tree[activeCert]) {
+      const roadmaps = Object.keys(data.tree[activeCert])
+      if (roadmaps.length > 0) {
+        setActiveRoadmap({ cert: activeCert, roadmap: roadmaps[0], topics: data.tree[activeCert][roadmaps[0]] })
+        setActiveTopic(null)
+      }
+    }
+  }, [activeCert, data])
 
   /* ── Memoised rendered markdown ───────────────────────────── */
   const renderedMd = useMemo(
@@ -210,7 +208,7 @@ export default function Home() {
             )}
 
             {/* ── Landing page ──────────────────────────────── */}
-            {!loading && !error && !activeTopic && !activeRoadmap && (
+            {!loading && !error && !activeTopic && !activeRoadmap && !activeCert && (
               <div className="landing">
                 <div className="landing-bg" />
 
@@ -268,6 +266,11 @@ export default function Home() {
               </div>
             )}
 
+            {/* ── Certification Intro Page ──────────────────── */}
+            {!loading && !error && !activeTopic && !activeRoadmap && activeCert && (
+              <CertIntro certId={activeCert} onStartTrack={handleStartTrack} />
+            )}
+
             {/* ── Roadmap overview grid ─────────────────────── */}
             {!loading && !error && !activeTopic && activeRoadmap && (
               <RoadmapOverview
@@ -302,6 +305,8 @@ export default function Home() {
                 {activeTopic.meta.questions.length > 0 && (
                   <Quiz key={activeTopic.slug} questions={activeTopic.meta.questions} />
                 )}
+
+                <LabCard topicTitle={activeTopic.meta.title} slug={activeTopic.slug} />
               </>
             )}
 
