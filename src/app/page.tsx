@@ -180,21 +180,29 @@ function renderMarkdown(raw: string): string {
 }
 
 /* ── Quiz Component ─────────────────────────────────────── */
-function Quiz({ questions, key: _key }: { questions: Question[]; key?: string }) {
+function Quiz({ questions }: { questions: Question[] }) {
   const [answers, setAnswers] = useState<(number | null)[]>(() => new Array(questions.length).fill(null))
   const [currentQ, setCurrentQ] = useState(0)
 
+  // Reset state if questions array changes to avoid stale mismatched indexes
+  useEffect(() => {
+    setAnswers(new Array(questions.length).fill(null))
+    setCurrentQ(0)
+  }, [questions])
+
   const handleAnswer = (qi: number, oi: number) => {
-    if (answers[qi] !== null) return
+    if (answers[qi] !== null && answers[qi] !== undefined) return
     const next = [...answers]; next[qi] = oi; setAnswers(next)
     if (qi === currentQ && qi < questions.length - 1) {
       setTimeout(() => setCurrentQ(q => q + 1), 700)
     }
   }
 
-  const score = answers.filter((a, i) => a === questions[i].answer).length
-  const answered = answers.filter(a => a !== null).length
-  const allDone = answered === questions.length
+  // Safely slice answers and guard against out-of-bound questions indexing
+  const safeAnswers = answers.slice(0, questions.length)
+  const score = safeAnswers.filter((a, i) => questions[i] && a === questions[i].answer).length
+  const answered = safeAnswers.filter(a => a !== null && a !== undefined).length
+  const allDone = answered === questions.length && questions.length > 0
 
   const reset = () => { setAnswers(new Array(questions.length).fill(null)); setCurrentQ(0) }
 
