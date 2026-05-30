@@ -375,11 +375,12 @@ body {
   margin: 2rem 0;
 }
 .md-body .md-img {
-  max-width: 100%;
+  max-width: 640px;
+  width: 100%;
   height: auto;
   border-radius: 12px;
   border: 1px solid var(--border);
-  margin: 1.5rem 0;
+  margin: 1.5rem auto;
   box-shadow: var(--shadow);
   display: block;
 }
