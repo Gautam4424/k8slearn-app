@@ -129,5 +129,30 @@ export async function GET() {
     }
   }
 
+  // Sort roadmaps within each cert using roadmapOrder from exam.json
+  // Uses case-insensitive matching so slight capitalisation differences don't break order
+  for (const cert of Object.keys(tree)) {
+    const order: string[] = (exams[cert]?.roadmapOrder ?? []).map((s: string) => s.toLowerCase().trim())
+    const roadmapKeys = Object.keys(tree[cert])
+    const sorted: Record<string, TopicEntry[]> = {}
+    // First: roadmaps listed in roadmapOrder (matched case-insensitively, keep original key)
+    for (const rm of roadmapKeys) {
+      const idx = order.indexOf(rm.toLowerCase().trim())
+      if (idx !== -1) sorted[rm] = tree[cert][rm]
+    }
+    // Sort the matched ones in roadmapOrder sequence
+    const orderedKeys = Object.keys(sorted).sort(
+      (a, b) => order.indexOf(a.toLowerCase().trim()) - order.indexOf(b.toLowerCase().trim())
+    )
+    const final: Record<string, TopicEntry[]> = {}
+    for (const k of orderedKeys) final[k] = sorted[k]
+    // Then: any remaining roadmaps not in the list (alphabetical)
+    for (const rm of roadmapKeys.sort()) {
+      if (!final[rm]) final[rm] = tree[cert][rm]
+    }
+    tree[cert] = final
+  }
+
   return NextResponse.json({ topics, tree, exams })
+
 }

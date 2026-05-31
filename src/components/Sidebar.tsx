@@ -22,6 +22,23 @@ const CERT_META: Record<string, { label: string; color: string; icon: string }> 
 
 const CERT_ORDER = ['cka', 'ckad', 'cks', 'kcna']
 
+/** Human-readable labels for roadmap keys that may be kebab-case or abbreviated. */
+const ROADMAP_LABELS: Record<string, string> = {
+  'core-concepts':                  'Core Concepts',
+  'k8s-architecture':               'K8s Architecture',
+  'application-design':             'Application Design',
+  'services-networking':            'Services & Networking',
+  'storage':                        'Storage',
+  'security':                       'Security',
+  'observability':                  'Observability',
+  'application lifecycle management': 'Application Lifecycle Management',
+}
+
+/** Return a display label for a roadmap key. */
+function roadmapLabel(rm: string): string {
+  return ROADMAP_LABELS[rm.toLowerCase().trim()] ?? rm
+}
+
 const DIFF_RANK: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 }
 
 /** Sort topics by difficulty then by explicit order field. */
@@ -175,7 +192,7 @@ export default function Sidebar({
                         onClick={() => handleRoadmapClick(cert, roadmap, topics)}
                       >
                         <span className={`roadmap-chevron ${isOpen ? 'open' : ''}`}>›</span>
-                        <span className="roadmap-icon">📂</span> {roadmap}
+                        <span className="roadmap-icon">📂</span> {roadmapLabel(roadmap)}
                         <span className="roadmap-count">{topics.length}</span>
                       </button>
 

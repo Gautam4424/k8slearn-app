@@ -313,24 +313,7 @@ export default function Home() {
           if (pct) pct.textContent = Math.round(scale * 100) + '%'
         }
 
-        // ── Scroll-wheel zoom (toward cursor) ───────────────
-        wrap.addEventListener('wheel', (e: WheelEvent) => {
-          e.preventDefault()
-          const rect  = wrap.getBoundingClientRect()
-          // Cursor position relative to canvas origin before scaling
-          const cx = e.clientX - rect.left - wrap.clientWidth  / 2 - tx
-          const cy = e.clientY - rect.top  - wrap.clientHeight / 2 - ty
-          const prevScale = scale
-          const delta = e.deltaY < 0 ? STEP : -STEP
-          scale = Math.min(MAX, Math.max(MIN, scale + delta))
-          const ratio = scale / prevScale
-          // Adjust translate so the point under the cursor stays fixed
-          tx -= cx * (ratio - 1)
-          ty -= cy * (ratio - 1)
-          applyTransform()
-        }, { passive: false })
-
-        // ── Drag to pan ─────────────────────────────────────
+        // ── Drag to pan ─────────────────────────────────────────────────
         wrap.addEventListener('mousedown', (e: MouseEvent) => {
           if ((e.target as HTMLElement).closest('.mermaid-controls')) return
           dragging = true
