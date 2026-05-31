@@ -283,7 +283,23 @@ export function renderHierarchicalDiagram(lines: string[]): string {
 
 /* ── Main Markdown Renderer ───────────────────────────────── */
 export function renderMarkdown(raw: string): string {
-  const lines = raw.replace(/\r\n/g, '\n').split('\n')
+  let lines = raw.replace(/\r\n/g, '\n').split('\n')
+
+  // ── Skip YAML Frontmatter block ─────────────────────────
+  let firstLineIdx = 0
+  while (firstLineIdx < lines.length && lines[firstLineIdx].trim() === '') {
+    firstLineIdx++
+  }
+  if (firstLineIdx < lines.length && lines[firstLineIdx].trim() === '---') {
+    let j = firstLineIdx + 1
+    while (j < lines.length && lines[j].trim() !== '---') {
+      j++
+    }
+    if (j < lines.length && lines[j].trim() === '---') {
+      lines = lines.slice(j + 1)
+    }
+  }
+
   const out: string[] = []
   let i = 0
 
