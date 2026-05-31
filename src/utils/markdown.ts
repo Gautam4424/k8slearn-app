@@ -375,7 +375,7 @@ export function renderMarkdown(raw: string): string {
     const h2 = line.match(/^## (.+)$/)
     const h3 = line.match(/^### (.+)$/)
     const h4 = line.match(/^#### (.+)$/)
-    if (h1) { out.push(`<h1 class="md-h1">${inlineFormat(esc(h1[1]))}</h1>`); i++; continue }
+    if (h1) { i++; continue }
     if (h2) { out.push(`<h2 class="md-h2"><span class="h2-bar"></span>${inlineFormat(esc(h2[1]))}</h2>`); i++; continue }
     if (h3) { out.push(`<h3 class="md-h3">${inlineFormat(esc(h3[1]))}</h3>`); i++; continue }
     if (h4) { out.push(`<h4 class="md-h4">${inlineFormat(esc(h4[1]))}</h4>`); i++; continue }
