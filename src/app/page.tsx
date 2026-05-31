@@ -72,13 +72,81 @@ export default function Home() {
   const [activeRoadmap,setActiveRoadmap]= useState<{ cert: string; roadmap: string; topics: TopicEntry[] } | null>(null)
   const [activeCert,   setActiveCert]   = useState('')   // '' = landing page
 
+  /* ── Write current nav state to the URL hash ─────────────── */
+  const pushHash = useCallback((
+    cert: string,
+    roadmap: string | null,
+    topicSlug: string | null,
+  ) => {
+    if (!cert) { history.replaceState(null, '', window.location.pathname); return }
+    let hash = cert
+    if (roadmap)   hash += '/' + encodeURIComponent(roadmap)
+    if (topicSlug) hash += '/' + encodeURIComponent(topicSlug)
+    history.replaceState(null, '', '#' + hash)
+  }, [])
+
   /* ── Fetch content tree on mount ─────────────────────────── */
   useEffect(() => {
     fetch('/api/content')
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
-      .then(d  => setData(d))
+      .then((d: ContentData) => {
+        setData(d)
+        // Restore state from URL hash AFTER content is available
+        const hash = window.location.hash.replace(/^#/, '')
+        if (!hash) return
+        const [cert, roadmapEnc, topicEnc] = hash.split('/')
+        if (!cert || !d.tree[cert]) return
+        setActiveCert(cert)
+        const roadmap = roadmapEnc ? decodeURIComponent(roadmapEnc) : null
+        const topicSlug = topicEnc ? decodeURIComponent(topicEnc) : null
+        if (roadmap && d.tree[cert][roadmap]) {
+          const topics = d.tree[cert][roadmap]
+          setActiveRoadmap({ cert, roadmap, topics })
+          if (topicSlug) {
+            const topic = topics.find(t => t.slug === topicSlug)
+            if (topic) setActiveTopic(topic)
+          }
+        }
+      })
       .catch(e => setError(e.message))
-      .finally(()=> setLoading(false))
+      .finally(() => setLoading(false))
+  }, [])
+
+  /* ── Load Mermaid.js once, dark theme ────────────────────── */
+  useEffect(() => {
+    if (document.getElementById('mermaid-script')) return
+    const s = document.createElement('script')
+    s.id = 'mermaid-script'
+    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js'
+    s.onload = () => {
+      ;(window as { mermaid?: { initialize: (c: object) => void } }).mermaid?.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+          /* node fill / text */
+          primaryColor:      '#1e3a5f',
+          primaryTextColor:  '#e2e8f0',
+          primaryBorderColor:'#3b82f6',
+          /* edges */
+          lineColor:         '#60a5fa',
+          edgeLabelBackground:'#0f172a',
+          /* clusters (subgraphs) */
+          clusterBkg:        '#0f2137',
+          clusterBorder:     '#3b82f6',
+          titleColor:        '#93c5fd',
+          /* other */
+          secondaryColor:    '#164e63',
+          tertiaryColor:     '#1e293b',
+          noteBkgColor:      '#1e293b',
+          noteTextColor:     '#94a3b8',
+          fontFamily:        'Inter, system-ui, sans-serif',
+          fontSize:          '14px',
+        },
+        flowchart: { htmlLabels: true, curve: 'basis', padding: 20 },
+        securityLevel: 'loose',
+      })
+    }
+    document.head.appendChild(s)
   }, [])
 
   /* ── Global copy-button handler (event delegation) ────────── */
@@ -105,6 +173,65 @@ export default function Home() {
     return () => document.removeEventListener('click', handleCopyClick)
   }, [])
 
+  /* ── Global interactive diagrams event delegation ─────────── */
+  useEffect(() => {
+    const handleMouseOver = (e: MouseEvent) => {
+      const node = (e.target as HTMLElement).closest('.diag-node')
+      if (!node) return
+      
+      const term = node.getAttribute('data-term')
+      const type = node.getAttribute('data-type')
+      const desc = node.getAttribute('data-desc')
+      if (!term || !desc) return
+      
+      const diagramBlock = node.closest('.diagram-block')
+      if (!diagramBlock) return
+      
+      const titleEl = diagramBlock.querySelector('.diagram-info-title')
+      const textEl = diagramBlock.querySelector('.diagram-info-text')
+      
+      if (titleEl && textEl) {
+        const icon = type === 'control-plane' ? '☸️' : '🛠️'
+        titleEl.innerHTML = `<span class="diag-info-badge diag-info-badge-${type}">${icon} ${term}</span>`
+        textEl.textContent = desc
+      }
+      
+      // Highlight all matching components in this diagram
+      const nodes = diagramBlock.querySelectorAll(`.diag-node[data-term="${term}"]`)
+      nodes.forEach(n => n.classList.add('diag-node-hovered'))
+    }
+
+    const handleMouseOut = (e: MouseEvent) => {
+      const node = (e.target as HTMLElement).closest('.diag-node')
+      if (!node) return
+      
+      const term = node.getAttribute('data-term')
+      const diagramBlock = node.closest('.diagram-block')
+      if (!diagramBlock) return
+      
+      const titleEl = diagramBlock.querySelector('.diagram-info-title')
+      const textEl = diagramBlock.querySelector('.diagram-info-text')
+      
+      if (titleEl && textEl) {
+        titleEl.innerHTML = '💡 Interactive Diagram Sandbox'
+        textEl.textContent = 'Hover over any highlighted component to inspect its official CNCF syllabus details.'
+      }
+      
+      if (term) {
+        const nodes = diagramBlock.querySelectorAll(`.diag-node[data-term="${term}"]`)
+        nodes.forEach(n => n.classList.remove('diag-node-hovered'))
+      }
+    }
+
+    document.addEventListener('mouseover', handleMouseOver)
+    document.addEventListener('mouseout', handleMouseOut)
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver)
+      document.removeEventListener('mouseout', handleMouseOut)
+    }
+  }, [])
+
+
   /* ── Scroll-to-top helper ─────────────────────────────────── */
   const contentRef = useRef<HTMLDivElement>(null)
   const scrollTop  = () => { if (contentRef.current) contentRef.current.scrollTop = 0 }
@@ -113,37 +240,169 @@ export default function Home() {
   const handleSelect = useCallback((t: TopicEntry) => {
     setActiveTopic(t)
     setActiveRoadmap(prev => prev ? { ...prev } : null)
+    // pushHash must be called in the event handler body, NOT inside the
+    // state-updater function above — Next.js intercepts history.replaceState()
+    // and triggers a Router state update, which React forbids during render.
+    if (activeRoadmap) pushHash(activeRoadmap.cert, activeRoadmap.roadmap, t.slug)
     setTimeout(scrollTop, 0)
-  }, [])
+  }, [activeRoadmap, pushHash])
+
 
   const handleRoadmapSelect = useCallback((cert: string, roadmap: string, topics: TopicEntry[]) => {
     setActiveRoadmap({ cert, roadmap, topics })
     setActiveTopic(null)
+    pushHash(cert, roadmap, null)
     setTimeout(scrollTop, 0)
-  }, [])
+  }, [pushHash])
 
   const handleCertSelect = useCallback((cert: string) => {
     setActiveCert(cert)
     setActiveTopic(null)
     setActiveRoadmap(null)
+    pushHash(cert, null, null)
     setTimeout(scrollTop, 0)
-  }, [])
+  }, [pushHash])
 
   const handleStartTrack = useCallback(() => {
     if (activeCert && data?.tree[activeCert]) {
       const roadmaps = Object.keys(data.tree[activeCert])
       if (roadmaps.length > 0) {
-        setActiveRoadmap({ cert: activeCert, roadmap: roadmaps[0], topics: data.tree[activeCert][roadmaps[0]] })
+        const roadmap = roadmaps[0]
+        const topics = data.tree[activeCert][roadmap]
+        setActiveRoadmap({ cert: activeCert, roadmap, topics })
         setActiveTopic(null)
+        pushHash(activeCert, roadmap, null)
       }
     }
-  }, [activeCert, data])
+  }, [activeCert, data, pushHash])
 
   /* ── Memoised rendered markdown ───────────────────────────── */
   const renderedMd = useMemo(
     () => activeTopic ? renderMarkdown(activeTopic.mdContent) : '',
     [activeTopic],
   )
+
+  /* ── Re-run Mermaid + inject zoom + pan controls ─────────── */
+  useEffect(() => {
+    if (!renderedMd) return
+    type MermaidWindow = { mermaid?: { run: (opts: object) => Promise<void> | void } }
+    const win = window as MermaidWindow
+
+    /** Inject top-right zoom controls and drag-to-pan into every diagram */
+    const injectZoomControls = () => {
+      document.querySelectorAll<HTMLElement>('.mermaid-wrap').forEach(wrap => {
+        if (wrap.dataset.zoomInit === '1') return
+        const svg = wrap.querySelector('svg')
+        if (!svg) return
+        wrap.dataset.zoomInit = '1'
+
+        // ── Canvas (pannable inner div) ─────────────────────
+        const canvas = document.createElement('div')
+        canvas.className = 'mermaid-canvas'
+        svg.parentElement?.insertBefore(canvas, svg)
+        canvas.appendChild(svg)
+
+        // State
+        let scale = 1, tx = 0, ty = 0
+        let dragging = false, startX = 0, startY = 0, startTx = 0, startTy = 0
+        const MIN = 0.25, MAX = 4, STEP = 0.15
+
+        const applyTransform = () => {
+          canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`
+          const pct = wrap.querySelector<HTMLElement>('.mz-pct')
+          if (pct) pct.textContent = Math.round(scale * 100) + '%'
+        }
+
+        // ── Scroll-wheel zoom (toward cursor) ───────────────
+        wrap.addEventListener('wheel', (e: WheelEvent) => {
+          e.preventDefault()
+          const rect  = wrap.getBoundingClientRect()
+          // Cursor position relative to canvas origin before scaling
+          const cx = e.clientX - rect.left - wrap.clientWidth  / 2 - tx
+          const cy = e.clientY - rect.top  - wrap.clientHeight / 2 - ty
+          const prevScale = scale
+          const delta = e.deltaY < 0 ? STEP : -STEP
+          scale = Math.min(MAX, Math.max(MIN, scale + delta))
+          const ratio = scale / prevScale
+          // Adjust translate so the point under the cursor stays fixed
+          tx -= cx * (ratio - 1)
+          ty -= cy * (ratio - 1)
+          applyTransform()
+        }, { passive: false })
+
+        // ── Drag to pan ─────────────────────────────────────
+        wrap.addEventListener('mousedown', (e: MouseEvent) => {
+          if ((e.target as HTMLElement).closest('.mermaid-controls')) return
+          dragging = true
+          startX  = e.clientX; startY  = e.clientY
+          startTx = tx;        startTy = ty
+          wrap.style.cursor = 'grabbing'
+          e.preventDefault()
+        })
+        window.addEventListener('mousemove', (e: MouseEvent) => {
+          if (!dragging) return
+          tx = startTx + (e.clientX - startX)
+          ty = startTy + (e.clientY - startY)
+          applyTransform()
+        })
+        const stopDrag = () => { dragging = false; wrap.style.cursor = 'grab' }
+        window.addEventListener('mouseup',    stopDrag)
+        window.addEventListener('mouseleave', stopDrag)
+
+        // ── Zoom control bar (top-right overlay) ────────────
+        const bar = document.createElement('div')
+        bar.className = 'mermaid-controls'
+        bar.innerHTML = `
+          <button class="mz-btn" data-action="out"   title="Zoom out">−</button>
+          <span   class="mz-pct">100%</span>
+          <button class="mz-btn" data-action="in"    title="Zoom in">+</button>
+          <button class="mz-btn mz-reset" data-action="reset" title="Reset">↺</button>
+        `
+        wrap.appendChild(bar)
+
+        bar.addEventListener('click', (e: MouseEvent) => {
+          const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-action]')
+          if (!btn) return
+          const action = btn.dataset.action
+          if (action === 'in')    scale = Math.min(MAX, scale + STEP)
+          if (action === 'out')   scale = Math.max(MIN, scale - STEP)
+          if (action === 'reset') { scale = 1; tx = 0; ty = 0 }
+          applyTransform()
+        })
+      })
+    }
+
+    const tryRender = () => {
+      if (!win.mermaid) { setTimeout(tryRender, 200); return }
+
+      // Strip old zoom state before re-render
+      document.querySelectorAll<HTMLElement>('.mermaid-wrap').forEach(w => {
+        delete w.dataset.zoomInit
+        w.style.cursor = ''
+      })
+      document.querySelectorAll<HTMLElement>('.mermaid-controls').forEach(el => el.remove())
+      document.querySelectorAll<HTMLElement>('.mermaid-canvas').forEach(el => {
+        // Move SVG back out before removing canvas wrapper
+        const s = el.querySelector('svg')
+        if (s) el.parentElement?.insertBefore(s, el)
+        el.remove()
+      })
+      document.querySelectorAll('pre.mermaid[data-processed]')
+        .forEach(el => el.removeAttribute('data-processed'))
+
+      const result = win.mermaid.run({ querySelector: 'pre.mermaid' })
+      if (result && typeof (result as Promise<void>).then === 'function') {
+        (result as Promise<void>).then(() => setTimeout(injectZoomControls, 60))
+      } else {
+        setTimeout(injectZoomControls, 320)
+      }
+    }
+
+    const t = setTimeout(tryRender, 150)
+    return () => clearTimeout(t)
+  }, [renderedMd])
+
+
 
   /* ── Topbar tagline ───────────────────────────────────────── */
   const tagline = loading

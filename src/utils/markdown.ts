@@ -115,7 +115,7 @@ export function renderYamlBlock(lines: string[], lang: string): string {
   }).join('\n')
 
   const label = lang === 'yaml' || lang === 'yml' ? 'YAML' : lang.toUpperCase()
-  const icon  = lang === 'yaml' || lang === 'yml' ? '📄' : '📋'
+  const icon = lang === 'yaml' || lang === 'yml' ? '📄' : '📋'
 
   return `<div class="yaml-block">
     <div class="yaml-header">
@@ -140,6 +140,145 @@ export function renderCodeBlock(lines: string[], lang: string): string {
     </div>
     <pre class="code-pre">${content}</pre>
   </div>`
+}
+
+
+/* ── Interactive Architecture Diagram ─────────────────────── */
+const TERM_EXPLANATIONS: Record<string, { desc: string; type: 'control-plane' | 'worker' }> = {
+  'api server': { desc: 'kube-apiserver: Front-end captain of the Control Plane. All REST API requests, CLI commands, and cluster queries pass through it for validation and execution.', type: 'control-plane' },
+  'kube-apiserver': { desc: 'kube-apiserver: Front-end captain of the Control Plane. All REST API requests, CLI commands, and cluster queries pass through it for validation and execution.', type: 'control-plane' },
+  'etcd': { desc: 'etcd: The cluster\'s memory. Distributed key-value database that stores the absolute state, configurations, and current statistics of the entire cluster.', type: 'control-plane' },
+  'scheduler': { desc: 'kube-scheduler: The planner. Monitors resource capacity across nodes and assigns newly created Pods to the most optimal worker node.', type: 'control-plane' },
+  'kube-scheduler': { desc: 'kube-scheduler: The planner. Monitors resource capacity across nodes and assigns newly created Pods to the most optimal worker node.', type: 'control-plane' },
+  'controller manager': { desc: 'kube-controller-manager: The supervisor. Runs background controller loops to continuously maintain desired cluster state (e.g. Node, Replication, and Endpoint controllers).', type: 'control-plane' },
+  'kube-controller-manager': { desc: 'kube-controller-manager: The supervisor. Runs background controller loops to continuously maintain desired cluster state (e.g. Node, Replication, and Endpoint controllers).', type: 'control-plane' },
+  'kubelet': { desc: 'kubelet: The node agent. Acts as the captain of each worker node. Manages node registration, monitors container runtimes, and guarantees containers are healthy in Pods.', type: 'worker' },
+  'kube-proxy': { desc: 'kube-proxy: The network coordinator. Handles network address translations, maintains iptables routing, and enables Pod-to-Pod and Service routing.', type: 'worker' },
+  'kube-prxy': { desc: 'kube-proxy: The network coordinator. Handles network address translations, maintains iptables routing, and enables Pod-to-Pod and Service routing.', type: 'worker' },
+  'runtime': { desc: 'Container Runtime: The container engine (e.g. containerd). Responsible for pulling images from registries and running the physical container processes.', type: 'worker' },
+  'pods': { desc: 'Pods: The smallest deployable Kubernetes units. Hosts one or more tightly-coupled containers that share IP addresses, network interfaces, and storage volumes.', type: 'worker' },
+  'pod': { desc: 'Pods: The smallest deployable Kubernetes units. Hosts one or more tightly-coupled containers that share IP addresses, network interfaces, and storage volumes.', type: 'worker' }
+}
+
+export function renderInteractiveDiagram(lines: string[]): string {
+  let rawText = lines.join('\n')
+  const sortedKeys = Object.keys(TERM_EXPLANATIONS).sort((a, b) => b.length - a.length)
+
+  const replacements: { placeholder: string; html: string }[] = []
+  let placeholderCounter = 0
+
+  for (const term of sortedKeys) {
+    const info = TERM_EXPLANATIONS[term]
+    const regex = new RegExp(`(?<![a-zA-Z0-9_-])${term}(?![a-zA-Z0-9_-])`, 'gi')
+
+    rawText = rawText.replace(regex, (match) => {
+      const placeholder = `__DIAGNODE_PLACEHOLDER_${placeholderCounter++}__`
+      const escapedMatch = esc(match)
+      const htmlSpan = `<span class="diag-node" data-term="${escapedMatch}" data-type="${info.type}" data-desc="${esc(info.desc)}">${escapedMatch}</span>`
+      replacements.push({ placeholder, html: htmlSpan })
+      return placeholder
+    })
+  }
+
+  // Escape HTML of the remaining rawText structure (retains the unique placeholders)
+  let escapedHtml = esc(rawText)
+
+  // Swap placeholder tokens back with their high-fidelity, safe HTML elements
+  for (const repl of replacements) {
+    escapedHtml = escapedHtml.replace(repl.placeholder, repl.html)
+  }
+
+  return `
+    <div class="diagram-block">
+      <div class="diagram-label"><span class="diagram-icon">⬡</span> INTERACTIVE CLUSTER PLATFORM</div>
+      <pre class="diagram-pre">${escapedHtml}</pre>
+      <div class="diagram-info-panel">
+        <div class="diagram-info-title">💡 Interactive Diagram Sandbox</div>
+        <div class="diagram-info-text">Hover over any highlighted component to inspect its official CNCF syllabus details.</div>
+      </div>
+    </div>
+  `
+}
+
+/* ── Hierarchical Tree Diagram ────────────────────────────── */
+export interface HierarchicalItem {
+  level: number
+  text: string
+  desc?: string
+}
+
+export function renderHierarchicalDiagram(lines: string[]): string {
+  const items: HierarchicalItem[] = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed === '') continue
+
+    const match = trimmed.match(/^(\|{1,6})\s*(.*)$/)
+    if (match) {
+      const level = match[1].length
+      const rawText = match[2].trim()
+
+      let text = rawText
+      let desc = ''
+      const colonIndex = rawText.indexOf(':')
+      if (colonIndex !== -1) {
+        text = rawText.substring(0, colonIndex).trim()
+        desc = rawText.substring(colonIndex + 1).trim()
+      } else {
+        const hyphenIndex = rawText.indexOf(' - ')
+        if (hyphenIndex !== -1) {
+          text = rawText.substring(0, hyphenIndex).trim()
+          desc = rawText.substring(hyphenIndex + 3).trim()
+        }
+      }
+
+      items.push({ level, text, desc })
+    }
+  }
+
+  if (items.length === 0) {
+    const content = lines.map(l => esc(l)).join('\n')
+    return `<div class="diagram-block"><div class="diagram-label"><span class="diagram-icon">⬡</span> FLOW DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`
+  }
+
+  const renderedItems = items.map((item) => {
+    const levelColors = ['primary', 'success', 'warning', 'danger', 'info']
+    const colorClass = levelColors[(item.level - 1) % levelColors.length]
+    const indentStyle = `style="--indent-level: ${item.level - 1};"`
+
+    const levelBadge = `<span class="tree-badge tree-badge-${colorClass}">L${item.level}</span>`
+    const bodyHtml = item.desc
+      ? `<div class="tree-card-body">
+           <span class="tree-card-title">${inlineFormat(esc(item.text))}</span>
+           <span class="tree-card-desc">${inlineFormat(esc(item.desc))}</span>
+         </div>`
+      : `<div class="tree-card-body">
+           <span class="tree-card-title-only">${inlineFormat(esc(item.text))}</span>
+         </div>`
+
+    return `
+      <div class="tree-item-wrap" ${indentStyle}>
+        <div class="tree-connector-line"></div>
+        <div class="tree-card tree-card-${colorClass}">
+          ${levelBadge}
+          ${bodyHtml}
+        </div>
+      </div>
+    `
+  }).join('')
+
+  return `
+    <div class="tree-diagram-block">
+      <div class="tree-diagram-header">
+        <span class="tree-diagram-icon">🌿</span>
+        <span class="tree-diagram-title">HIERARCHICAL SYSTEM MAP</span>
+      </div>
+      <div class="tree-diagram-body">
+        ${renderedItems}
+      </div>
+    </div>
+  `
 }
 
 /* ── Main Markdown Renderer ───────────────────────────────── */
@@ -171,9 +310,18 @@ export function renderMarkdown(raw: string): string {
           /\|\s/.test(snippet)
       })()
 
-      if (lang === 'diagram' || lang === 'ascii') {
-        const content = codeLines.map(l => esc(l)).join('\n')
-        out.push(`<div class="diagram-block"><div class="diagram-label"><span class="diagram-icon">⬡</span> ARCHITECTURE DIAGRAM</div><pre class="diagram-pre">${content}</pre></div>`)
+      if (lang === 'mermaid') {
+        // Emit a placeholder; mermaid.run() in page.tsx will render it
+        const definition = codeLines.join('\n')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        out.push(`<div class="mermaid-wrap"><pre class="mermaid">${definition}</pre></div>`)
+      } else if (lang === 'diagram' || lang === 'ascii') {
+        const isHierarchical = codeLines.some(line => /^\s*\|{1,6}\s+/.test(line))
+        if (isHierarchical) {
+          out.push(renderHierarchicalDiagram(codeLines))
+        } else {
+          out.push(renderInteractiveDiagram(codeLines))
+        }
       } else if (isDiagram) {
         out.push(parseFlowDiagram(codeLines))
       } else if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
@@ -197,9 +345,9 @@ export function renderMarkdown(raw: string): string {
       }
       const inner = bqLines.join(' ')
       const hasWarning = inner.includes('⚠️') || inner.toLowerCase().includes('warning') || inner.toLowerCase().includes('cannot')
-      const hasInfo    = inner.includes('📚') || inner.toLowerCase().includes('note')
-      const type  = hasWarning ? 'warning' : hasInfo ? 'info' : 'tip'
-      const icon  = type === 'warning' ? '⚠️' : type === 'info' ? '📘' : '💡'
+      const hasInfo = inner.includes('📚') || inner.toLowerCase().includes('note')
+      const type = hasWarning ? 'warning' : hasInfo ? 'info' : 'tip'
+      const icon = type === 'warning' ? '⚠️' : type === 'info' ? '📘' : '💡'
       const label = type === 'warning' ? 'Warning' : type === 'info' ? 'Note' : 'Tip'
       out.push(`<div class="callout callout-${type}"><div class="callout-header"><span class="callout-icon">${icon}</span><span class="callout-label">${label}</span></div><div class="callout-body">${inlineFormat(inner.replace(/⚠️|📚/g, '').trim())}</div></div>`)
       continue

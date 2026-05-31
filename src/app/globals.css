@@ -29,14 +29,14 @@
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
   --font: var(--font-inter, 'Inter', sans-serif);
   --font-mono: var(--font-mono, 'JetBrains Mono', monospace);
-  
+
   /* Additional layout variables for template landing page */
   --line: rgba(255, 255, 255, 0.075);
   --line-2: rgba(255, 255, 255, 0.12);
   --text-dim: #9aa3b8;
   --text-faint: #626b80;
-  --ease: cubic-bezier(.4,0,.2,1);
-  --display: 'Outfit','Inter',sans-serif;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --display: 'Outfit', 'Inter', sans-serif;
 }
 
 *,
@@ -480,9 +480,9 @@ body {
   text-align: left;
 }
 
-.topic-link:hover { 
-  background: rgba(255, 255, 255, 0.04); 
-  color: var(--text); 
+.topic-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
 }
 
 .topic-link:hover:has(.diff-dot.beginner) {
@@ -1947,7 +1947,7 @@ body {
   background:
     radial-gradient(900px 520px at 50% -8%, color-mix(in oklch, oklch(0.66 0.13 250) 22%, transparent), transparent 70%),
     radial-gradient(700px 480px at 88% 8%, color-mix(in oklch, oklch(0.66 0.14 300) 12%, transparent), transparent 65%),
-    linear-gradient(180deg, transparent, rgba(0,0,0,.25));
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, .25));
 }
 
 .landing-bg::after {
@@ -1983,7 +1983,7 @@ body {
   padding: 7px 15px;
   border-radius: 100px;
   border: 1px solid var(--line-2);
-  background: rgba(255,255,255,.025);
+  background: rgba(255, 255, 255, .025);
   backdrop-filter: blur(8px);
 }
 
@@ -2045,7 +2045,7 @@ body {
   padding: 30px 30px 26px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .012));
   backdrop-filter: blur(10px);
   transition: transform .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease);
   width: 100%;
@@ -2078,7 +2078,7 @@ body {
   border-color: color-mix(in oklch, var(--accent) 45%, var(--line-2));
   box-shadow:
     0 22px 60px -28px color-mix(in oklch, var(--accent) 60%, transparent),
-    0 8px 24px -16px rgba(0,0,0,.6);
+    0 8px 24px -16px rgba(0, 0, 0, .6);
 }
 
 .track-card:hover .track-go {
@@ -2406,10 +2406,12 @@ body {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
   }
+
   70% {
     transform: scale(1);
     box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
   }
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
@@ -2445,9 +2447,17 @@ body {
   border-radius: 50%;
 }
 
-.terminal-dots .dot.red { background: #ef4444; }
-.terminal-dots .dot.yellow { background: #eab308; }
-.terminal-dots .dot.green { background: #22c55e; }
+.terminal-dots .dot.red {
+  background: #ef4444;
+}
+
+.terminal-dots .dot.yellow {
+  background: #eab308;
+}
+
+.terminal-dots .dot.green {
+  background: #22c55e;
+}
 
 .terminal-tab-title {
   flex: 1;
@@ -2455,7 +2465,8 @@ body {
   font-size: 0.65rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
-  margin-right: -40px; /* offset dot container width */
+  margin-right: -40px;
+  /* offset dot container width */
 }
 
 .terminal-action-badge {
@@ -2500,7 +2511,9 @@ body {
 }
 
 @keyframes blink-cursor {
-  to { visibility: hidden; }
+  to {
+    visibility: hidden;
+  }
 }
 
 .terminal-output {
@@ -2526,8 +2539,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Lab footer */
@@ -2561,3 +2581,547 @@ body {
   flex-shrink: 0;
   opacity: 0.65;
 }
+
+/* ── Interactive Architecture Diagram Styles ──────────────── */
+.diagram-block {
+  margin: 1.5rem 0;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.diagram-label {
+  padding: 0.6rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diagram-icon {
+  color: var(--primary);
+  font-size: 0.8rem;
+  filter: drop-shadow(0 0 4px var(--primary-dim));
+}
+
+.diagram-pre {
+  padding: 1.25rem 1.5rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+  overflow-x: auto;
+  background: transparent;
+}
+
+.diag-node {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  margin: -0.05rem 0;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+/* Control Plane Nodes (Blue Premium Glow) */
+.diag-node[data-type="control-plane"] {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+.diag-node[data-type="control-plane"]:hover,
+.diag-node.diag-node-hovered[data-type="control-plane"] {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Worker Nodes (Green Premium Glow) */
+.diag-node[data-type="worker"] {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.diag-node[data-type="worker"]:hover,
+.diag-node.diag-node-hovered[data-type="worker"] {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Diagram Sandbox Dynamic Bottom Info Panel */
+.diagram-info-panel {
+  padding: 1rem 1.25rem;
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid var(--border);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: background 0.3s;
+}
+
+.diagram-info-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+}
+
+.diagram-info-text {
+  font-size: 0.825rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+/* Dynamic badges for hovered details */
+.diag-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diag-info-badge-control-plane {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.diag-info-badge-worker {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* ── Hierarchical Tree Diagram Styles ────────────────────── */
+.tree-diagram-block {
+  margin: 2rem 0;
+  border-radius: 16px;
+  background: radial-gradient(circle at 10% 20%, rgba(15, 23, 42, 0.95) 0%, rgba(2, 8, 23, 0.98) 100%);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+    repeating-linear-gradient(rgba(255, 255, 255, 0.005) 0px, rgba(255, 255, 255, 0.005) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.005) 0px, rgba(255, 255, 255, 0.005) 1px, transparent 1px, transparent 20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(25px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.tree-diagram-header {
+  padding: 0.9rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-transform: uppercase;
+}
+
+.tree-diagram-icon {
+  font-size: 1.15rem;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+  animation: float-icon 3s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.tree-diagram-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+.tree-item-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s var(--ease);
+  width: 100%;
+}
+
+/* Responsive Indentation - uses clamp for fluid responsive layout */
+.tree-item-wrap {
+  margin-left: calc(var(--indent-level, 0) * clamp(0.75rem, 5.5vw, 2.25rem));
+  width: calc(100% - (var(--indent-level, 0) * clamp(0.75rem, 5.5vw, 2.25rem)));
+}
+
+/* Connector line to the left of indented items - elegant fiber optic line */
+.tree-item-wrap:not([style*="--indent-level: 0"]):not([style*="--indent-level:0"]) .tree-connector-line {
+  position: absolute;
+  left: calc(-1 * clamp(0.5rem, 4vw, 1.25rem));
+  top: -1.25rem;
+  bottom: 50%;
+  width: clamp(0.5rem, 4vw, 1.15rem);
+  border-left: 2px solid rgba(59, 130, 246, 0.2);
+  border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+  border-bottom-left-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+/* Glow connector lines on hover of node */
+.tree-item-wrap:hover:not([style*="--indent-level: 0"]):not([style*="--indent-level:0"]) .tree-connector-line {
+  border-color: rgba(59, 130, 246, 0.6);
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+}
+
+.tree-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  width: 100%;
+  max-width: 720px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass glare dynamic hover effect */
+.tree-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right,
+      transparent,
+      rgba(255, 255, 255, 0.03),
+      transparent);
+  transform: skewX(-25deg);
+  transition: 0.75s;
+  pointer-events: none;
+}
+
+.tree-card:hover::before {
+  left: 125%;
+}
+
+.tree-card:hover {
+  transform: translateY(-2px) translateX(4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Theme variation left borders and vibrant backlights */
+.tree-card-primary {
+  border-left: 4px solid var(--primary);
+}
+
+.tree-card-primary:hover {
+  border-color: var(--primary-hover);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(59, 130, 246, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.tree-card-success {
+  border-left: 4px solid var(--success);
+}
+
+.tree-card-success:hover {
+  border-color: #34d399;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(16, 185, 129, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.tree-card-warning {
+  border-left: 4px solid var(--warning);
+}
+
+.tree-card-warning:hover {
+  border-color: #fbbf24;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(245, 158, 11, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.tree-card-danger {
+  border-left: 4px solid var(--danger);
+}
+
+.tree-card-danger:hover {
+  border-color: #f87171;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(239, 68, 68, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.tree-card-info {
+  border-left: 4px solid #a855f7;
+}
+
+.tree-card-info:hover {
+  border-color: #c084fc;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(168, 85, 247, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Badge glows */
+.tree-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.tree-badge-primary {
+  background: var(--primary-dim);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.15);
+}
+
+.tree-badge-success {
+  background: var(--success-dim);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
+}
+
+.tree-badge-warning {
+  background: var(--warning-dim);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.15);
+}
+
+.tree-badge-danger {
+  background: var(--danger-dim);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.15);
+}
+
+.tree-badge-info {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.15);
+}
+
+.tree-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.tree-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.tree-card-title-only {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+}
+
+.tree-card-desc {
+  font-size: 0.825rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* ── Mermaid diagram container ─────────────────────────────── */
+.mermaid-wrap {
+  position: relative;          /* anchor for controls overlay  */
+  margin: 1.75rem 0;
+  background: #080f1e;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 14px;
+  padding: 2rem 1.5rem 1.5rem;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 20px 50px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;            /* clip the canvas during pan    */
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 320px;
+  user-select: none;
+}
+.mermaid-wrap:active { cursor: grabbing; }
+
+/* Pre element — mermaid replaces it with an SVG */
+.mermaid-wrap pre.mermaid {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  white-space: pre !important;
+  display: block;
+}
+
+/* ── Pannable canvas ────────────────────────────────────────── */
+.mermaid-canvas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  transform-origin: center center;
+  will-change: transform;
+  transition: transform 0.08s linear;
+}
+
+/* SVG itself */
+.mermaid-canvas svg,
+.mermaid-wrap svg {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  min-width: 560px;
+  max-width: none !important;
+  border-radius: 8px;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+/* Cluster (subgraph) titles */
+.mermaid-wrap .cluster-label span,
+.mermaid-wrap .cluster-label p {
+  color: #93c5fd !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+/* Node labels */
+.mermaid-wrap .nodeLabel,
+.mermaid-wrap .label {
+  color: #e2e8f0 !important;
+  font-size: 13px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+/* Edge labels */
+.mermaid-wrap .edgeLabel p,
+.mermaid-wrap .edgeLabel span {
+  background: #0f172a !important;
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+/* ── Zoom control bar — absolute top-right corner ───────────── */
+.mermaid-controls {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(8, 15, 30, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: 999px;
+  padding: 5px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+  z-index: 20;
+  cursor: default;             /* don't show grab inside the bar */
+}
+
+.mz-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: 7px;
+  color: #93c5fd;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  padding: 0;
+}
+.mz-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.55);
+  transform: scale(1.1);
+}
+.mz-btn:active { transform: scale(0.92); }
+
+.mz-reset { font-size: 13px; color: #7dd3fc; }
+
+.mz-pct {
+  min-width: 36px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
