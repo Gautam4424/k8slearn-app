@@ -32,6 +32,7 @@ const ROADMAP_LABELS: Record<string, string> = {
   'security':                       'Security',
   'observability':                  'Observability',
   'application lifecycle management': 'Application Lifecycle Management',
+  'cluster-maintenance':            'Cluster Maintenance',
 }
 
 /** Return a display label for a roadmap key. */
