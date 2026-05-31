@@ -18,7 +18,8 @@ RUN apk add --no-cache git && \
     git config --system url."https://github.com/".insteadOf "git@github.com:" && \
     git config --system --add safe.directory /app/content && \
     git config --system --add safe.directory /app && \
-    git config --system core.autocrlf false
+    git config --system core.autocrlf false && \
+    git config --system core.filemode false
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
