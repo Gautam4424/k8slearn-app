@@ -1933,10 +1933,12 @@ body {
 }
 
 /* ========================= LANDING ========================= */
-.landing {
+.mermaid-wrap {
   position: relative;
   width: 100%;
-  padding: 0 32px 64px;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 8px;
 }
 
 .landing-bg {
@@ -2994,7 +2996,8 @@ body {
 /* ── Mermaid diagram container ─────────────────────────────── */
 .mermaid-wrap {
   position: relative;          /* anchor for controls overlay  */
-  margin: 1.75rem 0;
+  margin: 1.75rem auto;
+  max-width: 800px;
   background: #080f1e;
   border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 14px;
